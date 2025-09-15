@@ -1,16 +1,16 @@
-#New Manga Reader Project, the REST api for project will be based in this repository
+#   New Manga Reader Project, the REST api for project will be based in this repository
 
-##This project will be the quintessence of all my knowledge
+##  This project will be the quintessence of all my knowledge
 
-###instalation
-
-
-####~Installation with docker(recommended)~**(on progress)**
+### instalation
 
 
+####    ~Installation with docker(recommended)~**(on progress)**
 
 
-####Installation on local system
+
+
+####    Installation on local system
 
 for run this project you need 'uv' package manager
 
@@ -34,7 +34,7 @@ then run 'uv sync' for install all project dependencies
 
 
 
-###How to run project
+### How to run project
 
 for run installed app you must type
 '''bash
