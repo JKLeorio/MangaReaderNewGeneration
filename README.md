@@ -5,14 +5,24 @@ This project will be the quintessence of all my knowledge
 ## Setup and installation
 
 
-###    ~1.Installation with docker(recommended)~**(on progress)**
+###    1.Run with docker(recommended)
 
-_instructions for build docker container and run it_
+Build and start the container:
+
+```bash
+docker compose build
+docker compose up
+```
+
+This will build the Docker image, run tests and migrations, and start the FastAPI server with Uvicorn.
+
+The API will be available at:  
+`http://localhost:8000`
 
 
-###    2. Installation on local system
+###    2. Run without docker
 
-for run this project you need `uv` package manager
+for install and run this project you need `uv` package manager
 
 To install UV on Windows you need to type this in cmd or powershell.
 ```powershell

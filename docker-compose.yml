@@ -1,0 +1,47 @@
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    networks:
+      - network_buff
+    healthcheck:
+      test: "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"
+      interval: 2s
+      retries: 10
+
+  web:
+    build:
+      context: .
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    environment:
+      PYTHONBUFFERED: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    networks:
+      - network_buff
+    links:
+      - db:db
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+
+
+volumes:
+  postgres_data:
+
+networks:
+  network_buff:
+    driver: bridge
+      
+
