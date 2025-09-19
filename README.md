@@ -48,8 +48,8 @@ then run `uv sync` for install all project dependencies
 ## How to run project
 
 for run installed app you must type
-'''bash
+```bash
 uv run main.py
-'''
+```
 
 
