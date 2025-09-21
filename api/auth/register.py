@@ -29,9 +29,11 @@ async def register(
     now = get_current_time()
     user_service = UserService(session=session)
     new_user = await user_service.create_user(user_data=register_data)
+    await user_service.commit()
+    await user_service.refresh_user(new_user)
     payload = PayloadBase(
         id = new_user.id,
-        login = new_user.login,
+        username = new_user.username,
         email = new_user.email,
         expire_at = now + TOKEN_LIFETIME
     ).model_dump()

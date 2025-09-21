@@ -44,9 +44,9 @@ class UserService:
     ):
         user_dump = user_update.model_dump()
         fields = dict()
-        fields["login"] = user_dump.pop("login")
+        fields["username"] = user_dump.pop("username")
         fields["email"] = user_dump.pop("email")
-        conditions = conditions_generator(filters=fields)
+        conditions = conditions_generator(User, filters=fields)
         stmt = (
             select(User)
             .where(
@@ -99,23 +99,25 @@ class UserService:
             **user_dump, 
             hashed_password=hashed_password
             )
-        new_user = User(**user_dump)
-        self._session.add(User)
+        new_user = User(**user_data_validated.model_dump())
+        self._session.add(new_user)
         await self._session.flush()
         return new_user
+    
 
     async def get_user(
         self,
-        user_id: int,
-        options: Sequence[Any],
+        # user_id: int,
+        *conditions: Sequence[Any],
+        options: Sequence[Any] = [],
         throw_exception: bool = False,
-        **filters
-    ) -> Awaitable[User | None]:
-        conditions = conditions_generator(filters=filters)
+        # **filters
+    ) -> User | None:
+        # conditions = conditions_generator(User, filters=filters)
         stmt = (
             select(User)
             .where(
-                User.id == user_id,
+                # User.id == user_id,
                 *conditions
                 )
             .options(*options)
@@ -125,18 +127,25 @@ class UserService:
         if (throw_exception is True) and (user is None):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user with id {user_id} not found"
+                detail=f"user not found"
                 )
         return user
 
     async def get_users(
         self,
         session: AsyncSession,
-        options: Sequence[Any],
+        *conditions: Sequence[Any],
+        options: Sequence[Any] = [],
     ) -> Sequence[User]:
         stmt = (
             select(User)
-        ).options(*options)
+            .where(
+                *conditions
+            )
+            .options(
+                *options
+            )
+            )
         result = await session.execute(stmt)
         users = result.scalars().all()
         return users
@@ -146,9 +155,9 @@ class UserService:
         self,
         user_id: int,
         user_update: Dict
-    ) -> Awaitable[User]:
+    ) -> User:
         user = await self.get_user(
-            user_id=user_id,
+            User.id==user_id,
             throw_exception=True
         )
         updated_user = await self.update_user(
@@ -163,7 +172,7 @@ class UserService:
         self,
         user: User,
         user_update: Dict
-        ) -> Awaitable[User]:
+        ) -> User:
         for key, value in user_update.items():
             setattr(user, key, value)
         await self._session.flush()
@@ -173,13 +182,11 @@ class UserService:
     async def get_user_by_email(
         self,
         email: str,
-        ) -> Awaitable[User | None]:
-        stmt = (
-            select(User)
-            .where(User.email == email)
+        ) -> User | None:
+        user = await self.get_user(
+            User.email == email,
+            throw_exception=True
         )
-        result = await self._session.execute(stmt)
-        user = result.scalar_one_or_none()
         return user 
     
     

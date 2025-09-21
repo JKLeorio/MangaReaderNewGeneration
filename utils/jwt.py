@@ -3,6 +3,8 @@ import logging
 
 from typing import Any, Dict
 
+from pydantic import ValidationError
+
 
 
 from schemas.auth.payload import Payload
@@ -36,7 +38,7 @@ def decode_jwt(token: str) -> dict[str, Any]:
     return payload
 
 
-def validate_jwt(token: str) -> None | dict[str, Any]:
+def validate_jwt(token: str) -> None | Payload:
     """
     param: token -> jwt token
     return: payload
@@ -45,7 +47,10 @@ def validate_jwt(token: str) -> None | dict[str, Any]:
     payload = None
     try:
         payload = decode_jwt(token=token)
-        payload = Payload.model_validate(payload)
+        try:
+            payload = Payload.model_validate(payload)
+        except ValidationError:
+            return payload
     except jwt.exceptions.DecodeError as error:
         logger.exception(msg=error)
     finally:

@@ -10,6 +10,9 @@ from api.auth import (
     auth_router,
     register_router
     )
+from api.manga import (
+    comic_router
+)
 
 app = fastapi.FastAPI()
 
@@ -33,6 +36,11 @@ app.include_router(
     register_router,
     prefix="/register",
     tags=["Register"]
+)
+app.include_router(
+    comic_router,
+    prefix="/comic",
+    tags=["Comics"]
 )
 
 

@@ -1,15 +1,19 @@
 from datetime import datetime
 from fastapi import HTTPException, status
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_serializer, field_validator
 
 from utils.datetime_utils import get_current_time
 
 
 class PayloadBase(BaseModel):
     id: int
-    login: str
+    username: str
     email: str
     expire_at: datetime
+
+    @field_serializer("expire_at")
+    def expire_at_iso(self, expire_at: datetime) -> str:
+        return expire_at.isoformat()
 
 class Payload(PayloadBase):
     

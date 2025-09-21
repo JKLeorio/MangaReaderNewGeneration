@@ -19,28 +19,31 @@ auth_router = APIRouter()
 
 
 async def login_base(
-    login: str,
+    username: str,
     password: str,
     session: AsyncSession
 ) -> Awaitable[str]:
     now = get_current_time()
+    incorrect_data_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Incorrect username or password",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
     user_service = UserService(session=session)
     user: User = await user_service.get_user(
-        login=login,
-        throw_exception=True
+        User.username == username,
+        throw_exception=False
     )
+    if user is None:
+        raise incorrect_data_exception
     if not validate_password(
         hashed_password=user.hashed_password, 
         password=password
         ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            #Заменить к концу проекта
-            detail="incorrect password"
-        )
+        raise incorrect_data_exception
     payload = PayloadBase(
         id = user.id,
-        login = user.login,
+        username = user.username,
         email = user.email,
         expire_at = now + TOKEN_LIFETIME
     ).model_dump()
@@ -48,7 +51,7 @@ async def login_base(
     return token
 
 
-@auth_router.get(
+@auth_router.post(
     "/login",
     response_model=TokenResponse,
     status_code=status.HTTP_200_OK
@@ -57,10 +60,10 @@ async def login(
     login_data: UserLogin,
     session: AsyncSession = Depends(get_async_session),
 ):
-    login = login_data.login
+    username = login_data.username
     password = login_data.password
     token = await login_base(
-        login=login,
+        username=username,
         password=password,
         session=session
     )
@@ -68,7 +71,7 @@ async def login(
     return response
 
 
-@auth_router.get(
+@auth_router.post(
     "/form_login",
     status_code=status.HTTP_200_OK
     )
@@ -76,10 +79,10 @@ async def login_with_form(
     login_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: AsyncSession = Depends(get_async_session),
 ):
-    login = login_data.username
+    username = login_data.username
     password = login_data.password
     token = await login_base(
-        login=login,
+        username=username,
         password=password,
         session=session
     )
