@@ -14,6 +14,12 @@ from alembic import context
 from models.base import Base
 
 from models.user import User
+from models.comic import Comic, Chapter, Page
+from models.association import UserLibraryItem, Cover
+from models.person import Person
+from models.comment import Comment
+from models.image import Image
+
 from settings import DATABASE_URL
 
 
@@ -30,7 +36,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = [User.metadata]
+target_metadata = [Base.metadata]
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

@@ -49,3 +49,9 @@ TOKEN_LIFETIME = timedelta(days=1)
 
 TOKEN_ALGORITHM = "HS256"
 
+
+SUPPORTED_IMAGE_EXTENSIONS = [
+    "jpg",
+    "jpeg",
+    "png"
+]
