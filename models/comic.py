@@ -4,7 +4,7 @@ from datetime import date
 from sqlalchemy import Integer, String, Text, ForeignKey, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from db.types import ComicTypes, ReleaseStatus, TranslateStatus
+from db.types import ComicType, ReleaseStatus, TranslateStatus
 from .base import Base
 
 if typing.TYPE_CHECKING:
@@ -25,9 +25,9 @@ class Comic(Base):
     title: Mapped[str] = mapped_column(
         Text, nullable=True
     )
-    type: Mapped[ComicTypes] = mapped_column(
-        Enum(ComicTypes),
-        default=ComicTypes.MANGA
+    type: Mapped[ComicType] = mapped_column(
+        Enum(ComicType, name="comictype"),
+        default=ComicType.MANGA
     )
     release_date: Mapped[int] = mapped_column(
         Integer
@@ -126,3 +126,8 @@ class Page(Base):
         "Image",
         passive_deletes=True
     )
+    
+    @property
+    def image_url(self) -> str:
+        return self.image.url
+

@@ -28,7 +28,7 @@ class UserLIbraryItemStatus(str, Enum):
     FAVORITE = "Favorite"
 
 
-class ComicTypes(str, Enum):
+class ComicType(str, Enum):
     #Не полный список
     MANGA = "Manga"
     MANHWA = "Manhwa"

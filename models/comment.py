@@ -1,7 +1,7 @@
 import typing
 
 from datetime import datetime
-from sqlalchemy import String, Integer, ForeignKey, DateTime
+from sqlalchemy import String, Integer, ForeignKey, DateTime, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from utils.datetime_utils import get_current_time
@@ -19,6 +19,9 @@ class Comment(Base):
     id: Mapped[int] = mapped_column(
         Integer, autoincrement=True, primary_key=True
     )
+    content: Mapped[int] = mapped_column(
+        Text
+        )
     page_id: Mapped[int] = mapped_column(
         ForeignKey("pages.id", ondelete="CASCADE")
     )
@@ -44,6 +47,6 @@ class Comment(Base):
         ForeignKey("comments.id", ondelete="SET NULL")
     )
     
-    children: Mapped["Comment"] = relationship(
+    childrens: Mapped[list["Comment"]] = relationship(
         "Comment"
     )
