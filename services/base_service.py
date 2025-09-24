@@ -1,14 +1,8 @@
 from fastapi import HTTPException, status
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Any, Dict, Sequence, TypeVar
 
 from sqlalchemy import select
-
-from models.base import Base
-from models.user import User
-from services.utils import conditions_generator
-from utils.security import generate_hashed_password
 
 T = TypeVar("Model")
 
@@ -23,7 +17,7 @@ class BaseService:
 
     _session: AsyncSession = None
     _in_load_attributes: Sequence[str] = None
-    _model: T
+    model: T
 
     def __init__(
         self,
@@ -53,10 +47,11 @@ class BaseService:
     async def refresh(
             self,
             scalar: T,
+            attribute_names: Sequence[str] = []
     ):
         await self._session.refresh(
             scalar,
-            attribute_names=self._in_load_attributes
+            attribute_names=attribute_names
         )
     
 
@@ -67,29 +62,28 @@ class BaseService:
         throw_exception: bool = False,
     ) -> T | None:
         stmt = (
-            select(self._model)
+            select(self.model)
             .where(
                 *conditions
                 )
-            .options(*options)
+            .options(*options,)
         )
         result = await self._session.execute(stmt)
         scalar = result.scalar_one_or_none()
         if (throw_exception is True) and (scalar is None):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"{self._model.__name__} not found"
+                detail=f"{self.model.__name__} not found"
                 )
         return scalar
 
     async def get_all(
         self,
-        session: AsyncSession,
         *conditions: Sequence[Any],
         options: Sequence[Any] = [],
     ) -> Sequence[T]:
         stmt = (
-            select(self._model)
+            select(self.model)
             .where(
                 *conditions
             )
@@ -97,7 +91,7 @@ class BaseService:
                 *options
                 )
             )
-        result = await session.execute(stmt)
+        result = await self._session.execute(stmt)
         users = result.scalars().all()
         return users
 
@@ -108,7 +102,7 @@ class BaseService:
         update: Dict
     ) -> T:
         scalar = await self.get(
-            self._model.id==id,
+            self.model.id==id,
             throw_exception=True
         )
         updated_user = await self.update(
@@ -122,9 +116,21 @@ class BaseService:
     async def update(
         self,
         scalar: T,
-        user_update: Dict
+        update: Dict
         ) -> T:
-        for key, value in user_update.items():
+        for key, value in update.items():
             setattr(scalar, key, value)
         await self._session.flush()
         return scalar
+    
+    async def delete(
+        self,
+        scalar: T,
+    ) -> bool:
+        try:
+            await self._session.delete(scalar)
+            await self._session.flush()
+            return True
+        except Exception as error:
+            raise f"Error in delete object of type {type(scalar)} \n" \
+                    "error is :{error}"

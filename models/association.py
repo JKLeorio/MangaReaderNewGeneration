@@ -1,4 +1,3 @@
-from tkinter import Image
 import typing
 
 from sqlalchemy import ForeignKey, Enum, Integer
@@ -8,6 +7,7 @@ from .base import Base
 from db.types import UserLIbraryItemStatus
 
 if typing.TYPE_CHECKING:
+    from models.image import Image
     from models.comic import Comic
     from models.user import User
 
@@ -27,6 +27,7 @@ class UserLibraryItem(Base):
         )
     comic: Mapped["Comic"] = relationship(
         "Comic",
+        foreign_keys=[comic_id],
         passive_deletes=True
     )
     user_id: Mapped[int] = mapped_column(
@@ -34,6 +35,7 @@ class UserLibraryItem(Base):
         )
     user: Mapped["User"] = relationship(
         "User",
+        foreign_keys=[user_id],
         passive_deletes=True
     )
 
@@ -57,6 +59,7 @@ class Cover(Base):
     )
     comic: Mapped["Comic"] = relationship(
         "Comic",
+        foreign_keys=[comic_id],
         back_populates="covers",
         passive_deletes=True
     )
@@ -69,3 +72,9 @@ class Cover(Base):
         "Image",
         passive_deletes=True
     )
+
+    @property
+    def image_url(self):
+        if self.image:
+            return self.image.url
+        return None

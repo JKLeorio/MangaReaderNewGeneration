@@ -2,6 +2,8 @@ from typing import Optional
 from pydantic import BaseModel
 
 from db.types import ComicType
+from schemas.cover import CoverResponse
+from schemas.person import PersonBase, PersonResponse
 
 
 class ComicBase(BaseModel):
@@ -17,8 +19,9 @@ class ComicResponse(BaseModel):
     title: str
     type: ComicType
     release_date: int
-    # author
-    # artirs
+    author: PersonResponse
+    artist: PersonResponse
+    covers: list[CoverResponse]
 
 class ComicCreate(BaseModel):
     title: str

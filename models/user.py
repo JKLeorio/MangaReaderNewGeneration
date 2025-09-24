@@ -17,9 +17,10 @@ from datetime import (
 from db.types import Role
 from .base import Base
 
-if typing.TYPE_CHECKING:
-    from .image import Image
+# if typing.TYPE_CHECKING:
+#     from .image import Image
 
+from .image import Image
 
 class User(Base):
     __tablename__ = "users"
@@ -42,6 +43,7 @@ class User(Base):
         )
     avatar: Mapped["Image"] = relationship(
         "Image",
+        foreign_keys=[avatar_id],
         passive_deletes=True
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)

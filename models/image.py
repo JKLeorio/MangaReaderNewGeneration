@@ -21,6 +21,7 @@ class Image(Base):
     )
     uploaded_by: Mapped["User"] = relationship(
         "User",
+        foreign_keys=[uploaded_by_id],
         passive_deletes=True,
     )
 

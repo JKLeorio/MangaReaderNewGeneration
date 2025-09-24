@@ -27,6 +27,7 @@ class Comment(Base):
     )
     page: Mapped["Page"] = relationship(
         "Page",
+        foreign_keys=[page_id],
         passive_deletes=True
     )
 
@@ -40,6 +41,7 @@ class Comment(Base):
     )
     owner: Mapped["User"] = relationship(
         "User",
+        foreign_keys=[owner_id],
         passive_deletes=True
     )
 

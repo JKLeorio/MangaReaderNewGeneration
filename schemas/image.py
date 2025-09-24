@@ -24,6 +24,7 @@ class ImageCreate(BaseModel):
     url: str
     filename: str
     extension: str
+    uploaded_by_id: str
 
 
 class ImagePartialUpdate(BaseModel):

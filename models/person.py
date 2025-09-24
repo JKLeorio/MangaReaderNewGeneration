@@ -4,9 +4,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 from .base import Base
 
-if TYPE_CHECKING:
-    from .comic import Comic
-    from .image import Image
+# if TYPE_CHECKING:
+#     from .comic import Comic
+#     from .image import Image
+
+from .comic import Comic
+from .image import Image
+
 
 
 class Person(Base):
@@ -28,17 +32,21 @@ class Person(Base):
         "Image",
         passive_deletes=True
     )
-    comics_author: Mapped["Comic"] = relationship(
+    comics_author: Mapped[list["Comic"]] = relationship(
         "Comic",
         back_populates="author",
+        foreign_keys="Comic.author_id",
         passive_deletes=True
     )
-    comics_artist: Mapped["Comic"] = relationship(
+    comics_artist: Mapped[list["Comic"]] = relationship(
         "Comic",
+        foreign_keys="Comic.artist_id",
         back_populates="artist",
         passive_deletes=True
     )
     @property
     def avatar_url(self) -> str:
-        return self.avatar.url
+        if self.avatar is not None:
+            return self.avatar.url
+        return None
 

@@ -55,3 +55,6 @@ SUPPORTED_IMAGE_EXTENSIONS = [
     "jpeg",
     "png"
 ]
+
+
+MEDIA = "/media/"

@@ -7,23 +7,28 @@ from pydantic import BaseModel
 class PersonBase(BaseModel):
     id: int
     full_name: str
-    description: str
-    birth_date: date
+    description: Optional[str] = None
+    birth_date: Optional[date] = None
     avatar_id: int
 
 class PersonResponse(BaseModel):
     id: int
-    full_name: str
-    description: str
-    birth_date: date
+    full_name: str 
+    description: Optional[str] = None
+    birth_date: Optional[date] = None
     # avatar: ImageBase
-    avatar_url: str
+    avatar_url: Optional[str] = None
 
 
 class PersonCreate(BaseModel):
     full_name: str
     description: Optional[str] = None
     birth_date: Optional[date] = None
-    avatar_id: int
+    avatar_id: Optional[int] = None
     
     
+class PersonUpdate(BaseModel):
+    full_name: Optional[str] = None
+    description: Optional[str] = None
+    birth_date: Optional[date] = None
+    avatar_id: Optional[int] = None

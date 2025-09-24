@@ -7,8 +7,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.types import ComicType, ReleaseStatus, TranslateStatus
 from .base import Base
 
+from models.association import Cover
+
 if typing.TYPE_CHECKING:
-    from models.association import Cover
     from models.person import Person
     from models.user import User
     from models.image import Image
@@ -26,36 +27,29 @@ class Comic(Base):
         Text, nullable=True
     )
     type: Mapped[ComicType] = mapped_column(
-        Enum(ComicType, name="comictype"),
+        Enum(ComicType, name="comictypes"),
         default=ComicType.MANGA
     )
     release_date: Mapped[int] = mapped_column(
         Integer
     )
-
-    # release_status: Mapped[ReleaseStatus] = mapped_column(
-    #     Enum(ReleaseStatus), default=ReleaseStatus.FROZEN
-    # )
-    # translate_status: Mapped[TranslateStatus] = mapped_column(
-    #     Enum(TranslateStatus), default=TranslateStatus.NOT_TRANSLATED
-    # )
-
     author_id: Mapped[int] = mapped_column(
         ForeignKey("persons.id", ondelete="SET NULL"),
         nullable=True
         )
     author: Mapped["Person"] = relationship(
         "Person",
+        foreign_keys=[author_id],
         back_populates="comics_author",
         passive_deletes=True
     )
-
     artist_id: Mapped[int] = mapped_column(
         ForeignKey("persons.id", ondelete="SET NULL"),
         nullable=True
     )
     artist: Mapped["Person"] = relationship(
         "Person",
+        foreign_keys=[artist_id],
         back_populates="comics_artist",
         passive_deletes=True
     )
@@ -64,6 +58,12 @@ class Comic(Base):
         back_populates="comic",
     )
 
+    # release_status: Mapped[ReleaseStatus] = mapped_column(
+    #     Enum(ReleaseStatus), default=ReleaseStatus.FROZEN
+    # )
+    # translate_status: Mapped[TranslateStatus] = mapped_column(
+    #     Enum(TranslateStatus), default=TranslateStatus.NOT_TRANSLATED
+    # )
 
 
 class Chapter(Base):
@@ -82,6 +82,7 @@ class Chapter(Base):
     )
     comic: Mapped["Comic"] = relationship(
         "Comic",
+        foreign_keys=[comic_id],
         passive_deletes=True
     )
     position: Mapped[int] = mapped_column(
@@ -115,6 +116,7 @@ class Page(Base):
     )
     chapter: Mapped["Chapter"] = relationship(
         "Chapter",
+        foreign_keys=[chapter_id],
         back_populates="pages",
         passive_deletes=True
     )
@@ -124,6 +126,7 @@ class Page(Base):
     )
     image: Mapped["Image"] = relationship(
         "Image",
+        foreign_keys=[image_id],
         passive_deletes=True
     )
     
