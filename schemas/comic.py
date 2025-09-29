@@ -26,12 +26,12 @@ class ComicResponse(BaseModel):
     cover_url: str
     # covers: list[CoverResponse]
 
-class ComicCreate(BaseModel):
-    title: str
-    type: ComicType
-    release_date: int
-    author_id: Optional[int] = None
-    artist_id: Optional[int] = None
+# class ComicCreate(BaseModel):
+#     title: str
+#     type: ComicType
+#     release_date: int
+#     author_id: Optional[int] = None
+#     artist_id: Optional[int] = None
 
 class ComicPartialUpdate(BaseModel):
     title: Optional[str] = None
@@ -41,22 +41,29 @@ class ComicPartialUpdate(BaseModel):
     artist_id: Optional[int] = None
 
 
-class ComicCreateForm(BaseModel):
-    def __init__(
-            self,
-            title: Annotated[str, Form()],
-            type: Annotated[ComicType, Form()],
-            release_date: Annotated[int, Form()],
-            cover: UploadFile,
-            author_id: Annotated[int, Form()] = None,
-            artist_id: Annotated[int, Form()] = None,
-            ):
-        self.title = title
-        self.type = type
-        self.release_date = release_date
-        self.cover = cover
-        self.author_id = author_id
-        self.artist_id = artist_id
+class ComicCreate(BaseModel):
+    title: str
+    type: str
+    release_date: int
+    author_id: int | None = None
+    artist_id: int | None = None
+
+    @classmethod
+    def as_form(
+        cls,
+        title: Annotated[str, Form()],
+        type: Annotated[str, Form()],
+        release_date: Annotated[int, Form()],
+        author_id: Annotated[int | None, Form()] = None,
+        artist_id: Annotated[int | None, Form()] = None,
+    ) -> "ComicCreate":
+        return cls(
+            title=title,
+            type=type,
+            release_date=release_date,
+            author_id=author_id,
+            artist_id=artist_id,
+        )
 
 
 
@@ -76,6 +83,9 @@ class ChapterResponse(BaseModel):
     position: int
     volume: int
 
+class ChapterWithPagesResponse(ChapterResponse):
+    pages: List["PageBase"]
+
 class ChapterCreate(BaseModel):
     title: str
     comic_id: int
@@ -93,7 +103,8 @@ class PageBase(BaseModel):
     id: int
     position: int
     chapter_id: int
-    image_id: int
+    # image_id: int
+    image_url: str
 
 class PageResponse(BaseModel):
     id: int
@@ -104,7 +115,22 @@ class PageResponse(BaseModel):
 class PageCreate(BaseModel):
     position: int
     chapter_id: int
-    image_id: int
+    # image_id: int
+    image_url: str
+
+    @classmethod
+    def as_form(
+        cls,
+        position: Annotated[int, Form()],
+        chapter_id: Annotated[int, Form()],
+        image_url: Annotated[str, Form()],
+    ) -> "ComicCreate":
+        return cls(
+            position=position,
+            chapter_id=chapter_id,
+            image_url=image_url
+        )
+
 
 class PagePartialUpdate(BaseModel):
     position: Optional[int] = None

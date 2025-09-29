@@ -27,18 +27,19 @@ class PersonCreate(BaseModel):
     birth_date: Optional[date] = None
     # avatar_id: Optional[int] = None
 
-class PersonCreateForm(BaseModel):
-    def __init__(
-            self,
-            full_name: Annotated[str, Form()],
-            description: Annotated[str, Form()] = None,
-            avatar: UploadFile = None,
-            birth_day: Annotated[date, Form()] = None,
-            ):
-        self.full_name = full_name
-        self.description = description
-        self.birth_day = birth_day
-        self.avatar = avatar
+    @classmethod
+    def as_form(
+        cls,
+        full_name: Annotated[str, Form()],
+        description: Annotated[str, Form()] = None,
+        birth_day: Annotated[date, Form()] = None,
+    ) -> "PersonCreate":
+        return cls(
+            full_name=full_name,
+            description=description,
+            birth_day=birth_day
+        )
+    
 
     
     
@@ -46,4 +47,4 @@ class PersonUpdate(BaseModel):
     full_name: Optional[str] = None
     description: Optional[str] = None
     birth_date: Optional[date] = None
-    avatar_id: Optional[int] = None
+    # avatar_id: Optional[int] = None

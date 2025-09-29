@@ -151,3 +151,29 @@ class Page(FileMixin, Base):
     # def image_url(self) -> str:
     #     return self.image.url
 
+
+
+class Genre(Base):
+    __tablename__ = "genres"
+
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True
+        )
+    name: Mapped[str] = mapped_column(
+        String
+    )
+
+
+
+class ComicGenres(Base):
+    __tablename__ = "comic_genres"
+
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True
+        )
+    comic_id: Mapped[int] = mapped_column(
+        ForeignKey("comics.id", ondelete="CASCADE")
+    )
+    genre_id: Mapped[int] = mapped_column(
+        ForeignKey("genres.id", ondelete="CASCADE")
+    )

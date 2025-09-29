@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, UploadFile, status
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,7 +33,7 @@ async def get_persons(
     response_model=PersonResponse,
     status_code=status.HTTP_200_OK
 )
-async def get_persons(
+async def get_person(
     person_id: int,
     session: AsyncSession = Depends(get_async_session),
 ):
@@ -53,12 +53,14 @@ async def get_persons(
     status_code=status.HTTP_201_CREATED
 )
 async def create_person(
-    create_data: PersonCreate,
+    avatar_img: UploadFile,
+    create_data: PersonCreate = Depends(PersonCreate.as_form),
     session: AsyncSession = Depends(get_async_session)
 ):
     person_service = PersonService(session=session)
     new_person = await person_service.create(
-        create_data
+        create_data,
+        avatar_img
     )
     await person_service.commit()
     # await person_service.refresh(new_person, attribute_names=['avatar'])

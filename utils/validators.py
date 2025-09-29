@@ -1,4 +1,6 @@
-from typing import Dict
+from typing import Any, Dict
+from fastapi import HTTPException, status
+from sqlalchemy import Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -23,6 +25,13 @@ def dict_comparator(
 
 
 async def validate_ids(
-        session: AsyncSession
+        session: AsyncSession,
+        models_ids: Dict[Any, Sequence[int]]
         ):
-    pass
+    for model, ids in models_ids.items():
+        for id in ids:
+            if (await session.get(model, id)) is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"{model.__name__} with id {id} not found"
+                )

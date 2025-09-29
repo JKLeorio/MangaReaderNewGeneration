@@ -57,14 +57,15 @@ TOKEN_ALGORITHM = "HS256"
 SUPPORTED_IMAGE_EXTENSIONS = [
     "jpg",
     "jpeg",
-    "png"
+    "png",
 ]
 
+MEDIA = "media"
 
-MEDIA = pathlib.Path(ROOT) / "media"
+MEDIA_FOLDER = pathlib.Path(ROOT) / MEDIA
 
 def set_media_folder():
-    if not os.path.exists(MEDIA):
-        os.mkdir(MEDIA)
+    if not os.path.exists(MEDIA_FOLDER):
+        os.mkdir(MEDIA_FOLDER)
 
 set_media_folder()

@@ -1,6 +1,5 @@
 import logging
-import os
-import sys
+import uuid
 from pathlib import Path
 from fastapi import UploadFile
 import aiofiles
@@ -11,11 +10,12 @@ logger = logging.getLogger(__name__)
 
 
 async def upload_file(file: UploadFile) -> str:
-    filename = file.filename
-    file_url = MEDIA / "filename"
+    filename = f"{uuid.uuid4().hex}_{file.filename}"
+    # file_url = str((MEDIA / filename).resolve())
+    file_url = str(Path(MEDIA) / Path(filename).resolve())
     extension = filename.split('.')[-1]
     if extension in SUPPORTED_IMAGE_EXTENSIONS:
-        with aiofiles.open(file_url, mode="wb") as new_file:
+        async with aiofiles.open(file_url, mode="wb") as new_file:
             while chunk := await file.read(1024):
                 await new_file.write(chunk)
     return file_url
@@ -29,3 +29,5 @@ def delete_file(file_url: str):
             current_file.unlink()
     except Exception as error:
         logger.error(error)
+
+

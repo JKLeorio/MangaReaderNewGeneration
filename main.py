@@ -11,9 +11,12 @@ from api.auth import (
     register_router
     )
 from api.manga import (
-    comic_router
+    comic_router,
+    page_router,
+    chapter_router
 )
 from api.person import person_router
+from api.media import media_router
 
 app = fastapi.FastAPI()
 
@@ -40,15 +43,29 @@ app.include_router(
 )
 app.include_router(
     comic_router,
-    prefix="/comic",
+    prefix="/comics",
     tags=["Comics"]
 )
 app.include_router(
+    chapter_router,
+    prefix="/chapters",
+    tags=["Chaptes"]
+)
+app.include_router(
+    page_router,
+    prefix="/pages",
+    tags=["Pages"]
+)
+app.include_router(
     person_router,
-    prefix="/person",
+    prefix="/persons",
     tags=["Persons"]
 )
-
+app.include_router(
+    media_router,
+    prefix="/images",
+    tags=["Images"]
+)
 
 if __name__ == "__main__":
     uvicorn.run(

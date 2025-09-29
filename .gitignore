@@ -17,3 +17,6 @@ wheels/
 
 #alembic
 /alembic/versions/
+
+#media
+/media
