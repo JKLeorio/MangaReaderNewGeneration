@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Any, Dict, Sequence, TypeVar
-
+from fastapi_filter.contrib.sqlalchemy import Filter
 from sqlalchemy import select
 
 T = TypeVar("Model")
@@ -80,6 +80,7 @@ class BaseService:
     async def get_all(
         self,
         *conditions: Sequence[Any],
+        filter: Filter = None,
         options: Sequence[Any] = [],
     ) -> Sequence[T]:
         stmt = (
@@ -91,6 +92,8 @@ class BaseService:
                 *options
                 )
             )
+        if filter is not None:
+            stmt = filter.filter(stmt)
         result = await self._session.execute(stmt)
         users = result.scalars().all()
         return users

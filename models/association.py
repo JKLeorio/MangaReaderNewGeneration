@@ -41,40 +41,40 @@ class UserLibraryItem(Base):
 
 
 
-class Cover(Base):
-    __tablename__ = "covers"
+# class Cover(Base):
+#     __tablename__ = "covers"
 
-    id: Mapped[int] = mapped_column(
-        Integer, 
-        primary_key=True, 
-        autoincrement=True
-        )
-    position: Mapped[int] = mapped_column(
-        Integer
-    )
+#     id: Mapped[int] = mapped_column(
+#         Integer, 
+#         primary_key=True, 
+#         autoincrement=True
+#         )
+#     position: Mapped[int] = mapped_column(
+#         Integer
+#     )
 
-    comic_id: Mapped[int] = mapped_column(
-        ForeignKey("comics.id", ondelete="CASCADE"),
-        # nullable=True
-    )
-    comic: Mapped["Comic"] = relationship(
-        "Comic",
-        foreign_keys=[comic_id],
-        back_populates="covers",
-        passive_deletes=True
-    )
+#     comic_id: Mapped[int] = mapped_column(
+#         ForeignKey("comics.id", ondelete="CASCADE"),
+#         # nullable=True
+#     )
+#     comic: Mapped["Comic"] = relationship(
+#         "Comic",
+#         foreign_keys=[comic_id],
+#         back_populates="covers",
+#         passive_deletes=True
+#     )
 
-    image_id: Mapped[int] = mapped_column(
-        ForeignKey("images.id", ondelete="CASCADE"),
-        # nullable=True
-    )
-    image: Mapped["Image"] = relationship(
-        "Image",
-        passive_deletes=True
-    )
+#     image_id: Mapped[int] = mapped_column(
+#         ForeignKey("images.id", ondelete="CASCADE"),
+#         # nullable=True
+#     )
+#     image: Mapped["Image"] = relationship(
+#         "Image",
+#         passive_deletes=True
+#     )
 
-    @property
-    def image_url(self):
-        if self.image:
-            return self.image.url
-        return None
+#     @property
+#     def image_url(self):
+#         if self.image:
+#             return self.image.url
+#         return None

@@ -1,5 +1,5 @@
 from typing import Dict
-
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 def dict_comparator(
@@ -19,3 +19,10 @@ def dict_comparator(
         if ex_value != value:
             return False
     return True
+
+
+
+async def validate_ids(
+        session: AsyncSession
+        ):
+    pass

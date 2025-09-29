@@ -5,18 +5,19 @@ from sqlalchemy import Integer, String, Text, ForeignKey, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.types import ComicType, ReleaseStatus, TranslateStatus
-from .base import Base
+from .base import Base, FileMixin
 
-from models.association import Cover
+
 
 if typing.TYPE_CHECKING:
     from models.person import Person
     from models.user import User
-    from models.image import Image
+    # from models.image import Image
+    # from models.association import Cover
 
-
-class Comic(Base):
+class Comic(FileMixin, Base):
     __tablename__ = "comics"
+    file_field = "cover_url"
 
     id: Mapped[int] = mapped_column(
         Integer, 
@@ -53,10 +54,19 @@ class Comic(Base):
         back_populates="comics_artist",
         passive_deletes=True
     )
-    covers: Mapped[list["Cover"]] = relationship(
-        "Cover",
-        back_populates="comic",
+    cover_url: Mapped[str] = mapped_column(
+        String
     )
+    chapters: Mapped[list["Chapter"]] = relationship(
+        "Chapter",
+        back_populates="comic",
+        order_by="Chapter.position",
+        cascade="all, delete-orphan"
+    )
+    # covers: Mapped[list["Cover"]] = relationship(
+    #     "Cover",
+    #     back_populates="comic",
+    # )
 
     # release_status: Mapped[ReleaseStatus] = mapped_column(
     #     Enum(ReleaseStatus), default=ReleaseStatus.FROZEN
@@ -82,6 +92,7 @@ class Chapter(Base):
     )
     comic: Mapped["Comic"] = relationship(
         "Comic",
+        back_populates="chapters",
         foreign_keys=[comic_id],
         passive_deletes=True
     )
@@ -94,13 +105,16 @@ class Chapter(Base):
 
     pages: Mapped[list["Page"]] = relationship(
         "Page",
-        back_populates="chapter"
+        back_populates="chapter",
+        order_by="Page.position",
+        cascade="all, delete-orphan"
     )
 
     
 
-class Page(Base):
+class Page(FileMixin, Base):
     __tablename__ = "pages"
+    file_field = "image_url"
 
     id: Mapped[int] = mapped_column(
         Integer, 
@@ -120,17 +134,20 @@ class Page(Base):
         back_populates="pages",
         passive_deletes=True
     )
-    image_id: Mapped[int] = mapped_column(
-        ForeignKey("images.id", ondelete="SET NULL"),
-        nullable=True
+    image_url: Mapped[str] = mapped_column(
+        String
     )
-    image: Mapped["Image"] = relationship(
-        "Image",
-        foreign_keys=[image_id],
-        passive_deletes=True
-    )
+    # image_id: Mapped[int] = mapped_column(
+    #     ForeignKey("images.id", ondelete="SET NULL"),
+    #     nullable=True
+    # )
+    # image: Mapped["Image"] = relationship(
+    #     "Image",
+    #     foreign_keys=[image_id],
+    #     passive_deletes=True
+    # )
     
-    @property
-    def image_url(self) -> str:
-        return self.image.url
+    # @property
+    # def image_url(self) -> str:
+    #     return self.image.url
 

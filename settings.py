@@ -1,7 +1,11 @@
+import os
+import pathlib
 from datetime import timedelta
 from decouple import config
 
 from sqlalchemy import URL
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 #Debug mode for development
 DEBUG: str = config("DEBUG", cast=bool, default=True)
@@ -57,4 +61,10 @@ SUPPORTED_IMAGE_EXTENSIONS = [
 ]
 
 
-MEDIA = "/media/"
+MEDIA = pathlib.Path(ROOT) / "media"
+
+def set_media_folder():
+    if not os.path.exists(MEDIA):
+        os.mkdir(MEDIA)
+
+set_media_folder()

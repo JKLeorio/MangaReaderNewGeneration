@@ -15,7 +15,7 @@ from models.base import Base
 
 from models.user import User
 from models.comic import Comic, Chapter, Page
-from models.association import UserLibraryItem, Cover
+from models.association import UserLibraryItem
 from models.person import Person
 from models.comment import Comment
 from models.image import Image

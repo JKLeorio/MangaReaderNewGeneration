@@ -15,15 +15,15 @@ from datetime import (
     )
 
 from db.types import Role
-from .base import Base
+from .base import Base, FileMixin
 
 # if typing.TYPE_CHECKING:
 #     from .image import Image
 
-from .image import Image
 
-class User(Base):
+class User(FileMixin, Base):
     __tablename__ = "users"
+    file_field = "avatar_url"
 
     id: Mapped[int] = mapped_column(
         Integer, 
@@ -37,15 +37,20 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String)
     role: Mapped[Role] = mapped_column(Enum(Role, name="role", create_type=True), default=Role.USER)
     birth_date: Mapped[date] = mapped_column(Date, nullable=True)
-    avatar_id: Mapped[int] = mapped_column(
-        ForeignKey("images.id", ondelete="SET NULL"),
-        nullable=True
+    # avatar_id: Mapped[int] = mapped_column(
+    #     ForeignKey("images.id", ondelete="SET NULL"),
+    #     nullable=True
+    #     )
+    # avatar: Mapped["Image"] = relationship(
+    #     "Image",
+    #     foreign_keys=[avatar_id],
+    #     passive_deletes=True
+    # )
+    avatar_url: Mapped[str] = mapped_column(
+        String, 
+        nullable=True, 
+        default="default_avatar.png"
         )
-    avatar: Mapped["Image"] = relationship(
-        "Image",
-        foreign_keys=[avatar_id],
-        passive_deletes=True
-    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_super_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)

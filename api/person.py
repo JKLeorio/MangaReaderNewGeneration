@@ -21,7 +21,7 @@ async def get_persons(
 ):
     person_service = PersonService(session=session)
     persons = await person_service.get_all(
-        options=[selectinload(Person.avatar)]
+        # options=[selectinload(Person.avatar)]
     )
     response = [PersonResponse.model_validate(person, from_attributes=True)
                 for person in persons]
@@ -40,7 +40,7 @@ async def get_persons(
     person_service = PersonService(session=session)
     person = await person_service.get(
         Person.id == person_id,
-        options=[selectinload(Person.avatar)],
+        # options=[selectinload(Person.avatar)],
         throw_exception=True
     )
     response = PersonResponse.model_validate(person, from_attributes=True)
@@ -61,7 +61,7 @@ async def create_person(
         create_data
     )
     await person_service.commit()
-    await person_service.refresh(new_person, attribute_names=['avatar'])
+    # await person_service.refresh(new_person, attribute_names=['avatar'])
     return PersonResponse.model_validate(new_person, from_attributes=True)
     # return PersonResponse(
     #     id=new_person.id,
@@ -98,7 +98,7 @@ async def update_person(
     await person_service.commit()
     await person_service.refresh(
         updated_person,
-        attribute_names=['avatar']
+        # attribute_names=['avatar']
         )
     return PersonResponse.model_validate(updated_person, from_attributes=True)
 
