@@ -1,6 +1,6 @@
-from typing import Annotated, List, Optional
+from typing import List
 from fastapi import APIRouter, Form, UploadFile, status, Depends
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_filter import FilterDepends
 
@@ -32,7 +32,8 @@ async def get_comics(
         filter=filter,
         options=[
             joinedload(Comic.artist),
-            joinedload(Comic.author)
+            joinedload(Comic.author),
+            selectinload(Comic.genres)
         ]
     )
     response = [
@@ -91,7 +92,7 @@ async def create_comic(
     await comic_service.commit()
     await comic_service.refresh(
         new_comic,
-        attribute_names=["artist","author"]
+        attribute_names=["artist","author", "genres"]
     )
     return ComicResponse.model_validate(new_comic, from_attributes=True)
 
@@ -114,7 +115,7 @@ async def update_comic(
     await comic_service.commit()
     await comic_service.refresh(
         comic,
-        attribute_names=["artist","author"]
+        attribute_names=["artist","author", "genres"]
     )
     return ComicResponse.model_validate(comic, from_attributes=True)
     
@@ -130,8 +131,8 @@ async def delete_comic(
     # user: User = Depends(current_user),
 ):
     comic_service = ComicService(session=session)
-    await comic_service.delete(
-        comic_id=comic_id
+    await comic_service.delete_by_id(
+        id=comic_id
     )
     await comic_service.commit()
     return 

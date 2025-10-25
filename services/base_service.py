@@ -137,3 +137,14 @@ class BaseService:
         except Exception as error:
             raise f"Error in delete object of type {type(scalar)} \n" \
                     "error is :{error}"
+        
+    async def delete_by_id(
+        self,
+        id: int,
+    ):
+        scalar = await self.get(
+            self.model.id == id,
+            throw_exception=True
+        )
+        await self.delete(scalar=scalar)
+        

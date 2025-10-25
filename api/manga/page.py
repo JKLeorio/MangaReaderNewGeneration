@@ -7,10 +7,10 @@ from services.comic.page_service import PageService
 
 page_router = APIRouter()
 
-page_router.post(
+@page_router.post(
     "/",
     response_model=PageResponse,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_201_CREATED
 )
 async def create_page(
     page_img: UploadFile,

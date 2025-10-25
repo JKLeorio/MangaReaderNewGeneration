@@ -16,5 +16,5 @@ class FileMixin:
     def __declare_last__(cls):
         @event.listens_for(cls, "after_delete")
         def _delete_file_(mapper, connection, target):
-            path = getattr(target, cls.file_field, None)
-            delete_file(path)
+            file_url = getattr(target, cls.file_field, None)
+            delete_file(file_url)

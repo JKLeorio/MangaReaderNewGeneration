@@ -63,9 +63,10 @@ app.include_router(
 )
 app.include_router(
     media_router,
-    prefix="/images",
-    tags=["Images"]
+    prefix="/media",
+    tags=["Media"]
 )
+
 
 if __name__ == "__main__":
     uvicorn.run(

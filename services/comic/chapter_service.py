@@ -14,9 +14,9 @@ class ChapterService(BaseService):
 
     async def create(
         self,
-        chapter_data: ChapterCreate,
+        create_data: ChapterCreate,
     ) -> Chapter:
-        new_chapter = Chapter(**ChapterCreate)
+        new_chapter = Chapter(**create_data.model_dump())
         self._session.add(new_chapter)
         await self.commit()
         await self.refresh(new_chapter)
@@ -42,7 +42,3 @@ class ChapterService(BaseService):
             )
         return chapter
     
-    async def delete(
-        chapter_id: int
-    ):
-        pass

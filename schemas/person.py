@@ -31,8 +31,8 @@ class PersonCreate(BaseModel):
     def as_form(
         cls,
         full_name: Annotated[str, Form()],
-        description: Annotated[str, Form()] = None,
-        birth_day: Annotated[date, Form()] = None,
+        description: Annotated[str | None, Form()] = None,
+        birth_day: Annotated[date | None, Form()] = None,
     ) -> "PersonCreate":
         return cls(
             full_name=full_name,

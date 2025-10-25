@@ -1,8 +1,10 @@
 import os
 import pathlib
 from datetime import timedelta
+import urllib.parse
 from decouple import config
 
+import logging
 from sqlalchemy import URL
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -60,9 +62,15 @@ SUPPORTED_IMAGE_EXTENSIONS = [
     "png",
 ]
 
-MEDIA = "media"
+MEDIA_PROTOCOL = "http"
+DOMAIN = "127.0.0.1:8000/"
+MEDIA_FULL_DOMAIN = f"{MEDIA_PROTOCOL}://{DOMAIN}"
+MEDIA = "media/"
 
-MEDIA_FOLDER = pathlib.Path(ROOT) / MEDIA
+MEDIA_FOLDER_LOCATION = ROOT
+MEDIA_FOLDER = pathlib.Path(MEDIA_FOLDER_LOCATION) / MEDIA
+MEDIA_URL = urllib.parse.urljoin(MEDIA_FULL_DOMAIN, MEDIA)
+
 
 def set_media_folder():
     if not os.path.exists(MEDIA_FOLDER):

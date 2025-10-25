@@ -12,6 +12,7 @@ class ComicBase(BaseModel):
     id: int
     title: str
     type: ComicType
+    description: str
     release_date: int
     author_id: int
     artist_id: int
@@ -21,9 +22,11 @@ class ComicResponse(BaseModel):
     title: str
     type: ComicType
     release_date: int
+    description: str
     author: PersonResponse
     artist: PersonResponse
     cover_url: str
+    genres: List["GenreBase"]
     # covers: list[CoverResponse]
 
 # class ComicCreate(BaseModel):
@@ -36,6 +39,7 @@ class ComicResponse(BaseModel):
 class ComicPartialUpdate(BaseModel):
     title: Optional[str] = None
     type: Optional[ComicType] = None
+    description: Optional[str] = None
     release_date: Optional[int] = None
     author_id: Optional[int] = None
     artist_id: Optional[int] = None
@@ -43,7 +47,8 @@ class ComicPartialUpdate(BaseModel):
 
 class ComicCreate(BaseModel):
     title: str
-    type: str
+    description: Optional[str] = None
+    type: ComicType
     release_date: int
     author_id: int | None = None
     artist_id: int | None = None
@@ -52,14 +57,16 @@ class ComicCreate(BaseModel):
     def as_form(
         cls,
         title: Annotated[str, Form()],
-        type: Annotated[str, Form()],
+        type: Annotated[ComicType, Form()],
         release_date: Annotated[int, Form()],
+        description: Annotated[str | None, Form()] = None,
         author_id: Annotated[int | None, Form()] = None,
         artist_id: Annotated[int | None, Form()] = None,
     ) -> "ComicCreate":
         return cls(
             title=title,
             type=type,
+            description=description,
             release_date=release_date,
             author_id=author_id,
             artist_id=artist_id,
@@ -79,7 +86,7 @@ class ChapterBase(BaseModel):
 class ChapterResponse(BaseModel):
     id: int
     title: str
-    comic: ChapterBase
+    comic: ComicBase
     position: int
     volume: int
 
@@ -105,6 +112,7 @@ class PageBase(BaseModel):
     chapter_id: int
     # image_id: int
     image_url: str
+    
 
 class PageResponse(BaseModel):
     id: int
@@ -146,3 +154,8 @@ class ComicFilter(Filter):
 
     class Constants(Filter.Constants):
         model = Comic
+
+
+class GenreBase(BaseModel):
+    id: int
+    name: str

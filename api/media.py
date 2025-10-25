@@ -9,7 +9,7 @@ media_router = APIRouter()
 
 
 @media_router.get(
-    "/{image_path}",
+    "/{image_name}",
     responses={
           200: {
             "content": {
@@ -21,16 +21,17 @@ media_router = APIRouter()
     }
 )
 async def get_image(
-    image_path: str
+    image_name: str
 ):
-    if image_path and os.path.exists(image_path):
-        file_extension = image_path.split(".")[-1]
-        if file_extension in SUPPORTED_IMAGE_EXTENSIONS:
-            full_image_path = MEDIA_FOLDER / image_path
-            return FileResponse(
-                path=full_image_path,
-                media_type=f"image/{file_extension}"
-                )
+    if image_name:
+        full_image_path = MEDIA_FOLDER / image_name
+        if os.path.exists(full_image_path):
+            file_extension = image_name.split(".")[-1]
+            if file_extension in SUPPORTED_IMAGE_EXTENSIONS:
+                return FileResponse(
+                    path=full_image_path,
+                    media_type=f"image/{file_extension}"
+                    )
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail="image not found"

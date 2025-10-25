@@ -2,7 +2,7 @@ from typing import Annotated, List, Optional
 from fastapi import APIRouter, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_filter import FilterDepends
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from api.auth.depends import current_user
 from db.database import get_async_session
@@ -31,7 +31,7 @@ async def get_chapter_with_pages(
         Chapter.id == chapter_id,
         options=[
             joinedload(Chapter.comic),
-            joinedload(Chapter.pages),
+            selectinload(Chapter.pages),
             ],
         throw_exception=True
         )
@@ -54,7 +54,12 @@ async def create_chapter(
 ):
     chapter_service = ChapterService(session=session)
     new_chapter = await chapter_service.create(create_data=chapter_create)
+    await chapter_service.commit()
+    await chapter_service.refresh(
+        new_chapter, attribute_names=["comic"]
+    )
     return ChapterResponse.model_validate(new_chapter, from_attributes=True)
+
 
 @chapter_router.patch(
     "/{chapter_id}",
@@ -72,6 +77,10 @@ async def update_chapter(
         id=chapter_id,
         update=chapter_update
         )
+    await chapter_service.commit()
+    await chapter_service.refresh(
+        chapter, attribute_names=["comic"]
+    )
     return ChapterResponse.model_validate(chapter, from_attributes=True)
     
 
@@ -86,7 +95,8 @@ async def delete_chapter(
     # user: User = Depends(current_user),
 ):
     chapter_service = ChapterService(session=session)
-    await chapter_service.delete(
-        chapter_id=chapter_id
+    await chapter_service.delete_by_id(
+        id=chapter_id
     )
+    await chapter_service.commit()
     return 

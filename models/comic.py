@@ -25,6 +25,9 @@ class Comic(FileMixin, Base):
         autoincrement=True
         )
     title: Mapped[str] = mapped_column(
+        String
+    )
+    description: Mapped[str] = mapped_column(
         Text, nullable=True
     )
     type: Mapped[ComicType] = mapped_column(
@@ -62,6 +65,11 @@ class Comic(FileMixin, Base):
         back_populates="comic",
         order_by="Chapter.position",
         cascade="all, delete-orphan"
+    )
+    genres: Mapped[list["ComicGenres"]] = relationship(
+        "ComicGenres",
+        passive_deletes=True,
+        foreign_keys="ComicGenres.comic_id"
     )
     # covers: Mapped[list["Cover"]] = relationship(
     #     "Cover",
@@ -161,6 +169,11 @@ class Genre(Base):
         )
     name: Mapped[str] = mapped_column(
         String
+    )
+    comics: Mapped[list["ComicGenres"]] = relationship(
+        "ComicGenres",
+        passive_deletes=True,
+        foreign_keys="ComicGenres.genre_id"
     )
 
 
