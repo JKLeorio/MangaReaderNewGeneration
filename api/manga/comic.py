@@ -1,5 +1,5 @@
-from typing import List
-from fastapi import APIRouter, Form, UploadFile, status, Depends
+from typing import Annotated, List
+from fastapi import APIRouter, Form, Query, UploadFile, status, Depends
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_filter import FilterDepends
@@ -7,7 +7,8 @@ from fastapi_filter import FilterDepends
 from api.auth.depends import current_user
 from db.database import get_async_session
 from models.comic import Chapter, Comic
-from schemas.comic import ChapterResponse, ComicCreate, ComicFilter, ComicPartialUpdate, ComicResponse
+from schemas.comic import ChapterResponse, ComicCreate, ComicFilter, ComicPartialUpdate, ComicResponse, ComicsPaginated
+from schemas.pagination import Pagination
 from services.comic.chapter_service import ChapterService
 from services.comic.comic_service import ComicService
 from utils.validators import validate_ids
@@ -19,29 +20,37 @@ comic_router = APIRouter()
 
 @comic_router.get(
     "/comics",
-    response_model=List[ComicResponse],
+    response_model=ComicsPaginated,
     status_code=status.HTTP_200_OK
 )
 async def get_comics(
+    pagination: Pagination = Depends(Pagination.as_query),
     filter: ComicFilter = FilterDepends(ComicFilter),
     session: AsyncSession = Depends(get_async_session),
     # user: User = Depends(current_user),
 ):
     comic_service = ComicService(session=session)
-    comics = await comic_service.get_all(
+    paginated_comics = await comic_service.get_paginated(
         filter=filter,
+        limit=pagination.size,
+        page=pagination.page,
         options=[
             joinedload(Comic.artist),
             joinedload(Comic.author),
             selectinload(Comic.genres)
         ]
     )
-    response = [
-        ComicResponse.model_validate(
-            comic,
-            from_attributes=True
-        ) for comic in comics
-    ]
+    comics = paginated_comics.get('items')
+    pagination_status = paginated_comics.get('pagination')
+    response = ComicsPaginated(
+        comics=[
+            ComicResponse.model_validate(
+                comic,
+                from_attributes=True
+            ) for comic in comics
+        ],
+        pagination=pagination_status
+    )
     return response
 
 @comic_router.get(

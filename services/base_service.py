@@ -1,8 +1,11 @@
+from math import ceil
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Any, Dict, Sequence, TypeVar
 from fastapi_filter.contrib.sqlalchemy import Filter
-from sqlalchemy import select
+from sqlalchemy import Select, func, select
+
+from schemas.pagination import Pagination
 
 T = TypeVar("Model")
 
@@ -53,36 +56,13 @@ class BaseService:
             scalar,
             attribute_names=attribute_names
         )
-    
 
-    async def get(
+    async def _generate_statement(
         self,
         *conditions: Sequence[Any],
         options: Sequence[Any] = [],
-        throw_exception: bool = False,
-    ) -> T | None:
-        stmt = (
-            select(self.model)
-            .where(
-                *conditions
-                )
-            .options(*options,)
-        )
-        result = await self._session.execute(stmt)
-        scalar = result.scalar_one_or_none()
-        if (throw_exception is True) and (scalar is None):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"{self.model.__name__} not found"
-                )
-        return scalar
-
-    async def get_all(
-        self,
-        *conditions: Sequence[Any],
         filter: Filter = None,
-        options: Sequence[Any] = [],
-    ) -> Sequence[T]:
+    ) -> Select[Any]:
         stmt = (
             select(self.model)
             .where(
@@ -94,10 +74,76 @@ class BaseService:
             )
         if filter is not None:
             stmt = filter.filter(stmt)
+        return stmt
+        
+    
+
+    async def get(
+        self,
+        *conditions: Sequence[Any],
+        options: Sequence[Any] = [],
+        throw_exception: bool = False,
+    ) -> T | None:
+        stmt = self._generate_statement(
+            conditions,
+            options=options
+        )
+        result = await self._session.execute(stmt)
+        scalar = result.scalar_one_or_none()
+        if (throw_exception is True) and (scalar is None):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"{self.model.__name__} not found"
+                )
+        return scalar
+    
+
+    async def get_all(
+        self,
+        *conditions: Sequence[Any],
+        options: Sequence[Any] = [],
+        filter: Filter = None,
+    ) -> Sequence[T]:
+        stmt = self._generate_statement(
+            conditions,
+            options=options,
+            filter=filter
+        )
         result = await self._session.execute(stmt)
         users = result.scalars().all()
         return users
+    
+    async def get_paginated(
+        self,
+        *conditions: Sequence[Any],
+        options: Sequence[Any] = [],
+        filter: Filter = None,
+        limit: int = 20,
+        page: int = 1
+    ) -> Dict[str, Any]:
+        stmt = await self._generate_statement(
+            *conditions,
+            options=options,
+            filter=filter
+        )
+        total_stmt = select(func.count()).select_from(stmt)
+        total_result = (await self._session.execute(total_stmt)).scalar_one_or_none()
+        stmt.limit(limit=limit)
+        result = await self._session.execute(stmt)
+        items = result.scalars().all()
+        offset = limit * (page-1)
+        total = ceil((total_result if total_result else 0) / limit)
+        page = total if page > total else page
+        response = {
+            'items' : items,
+            'pagination': Pagination(
+                total=total,
+                page=page,
+                size=limit
+            )
+        }
 
+        return response
 
     async def update_by_id(
         self,

@@ -5,6 +5,7 @@ from fastapi_filter.contrib.sqlalchemy import Filter
 from db.types import ComicType
 from models.comic import Comic
 from schemas.cover import CoverResponse
+from schemas.pagination import Pagination
 from schemas.person import PersonBase, PersonResponse
 
 
@@ -29,12 +30,12 @@ class ComicResponse(BaseModel):
     genres: List["GenreBase"]
     # covers: list[CoverResponse]
 
-# class ComicCreate(BaseModel):
-#     title: str
-#     type: ComicType
-#     release_date: int
-#     author_id: Optional[int] = None
-#     artist_id: Optional[int] = None
+
+
+class ComicsPaginated(BaseModel):
+    comics: List[ComicResponse]
+    pagination: Pagination
+
 
 class ComicPartialUpdate(BaseModel):
     title: Optional[str] = None
