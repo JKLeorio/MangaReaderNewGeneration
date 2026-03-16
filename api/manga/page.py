@@ -21,5 +21,7 @@ async def create_page(
     new_page = await page_service.create(
         create_data, page_img
         )
+    page_service.commit()
+    page_service.refresh(new_page)
     response = PageResponse.model_validate(new_page, from_attributes=True)
     return response

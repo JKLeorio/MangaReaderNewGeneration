@@ -76,12 +76,12 @@ class Comic(FileMixin, Base):
     #     back_populates="comic",
     # )
 
-    # release_status: Mapped[ReleaseStatus] = mapped_column(
-    #     Enum(ReleaseStatus), default=ReleaseStatus.FROZEN
-    # )
-    # translate_status: Mapped[TranslateStatus] = mapped_column(
-    #     Enum(TranslateStatus), default=TranslateStatus.NOT_TRANSLATED
-    # )
+    release_status: Mapped[ReleaseStatus] = mapped_column(
+        Enum(ReleaseStatus), default=ReleaseStatus.FROZEN
+    )
+    translate_status: Mapped[TranslateStatus] = mapped_column(
+        Enum(TranslateStatus), default=TranslateStatus.NOT_TRANSLATED
+    )
 
 
 class Chapter(Base):

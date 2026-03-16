@@ -1,11 +1,16 @@
+from collections import defaultdict
 from math import ceil
 from fastapi import HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Any, Dict, Sequence, TypeVar
+from typing import Any, Dict, List, Sequence, TypeVar
 from fastapi_filter.contrib.sqlalchemy import Filter
 from sqlalchemy import Select, func, select
+# from sqlalchemy import exc
+# from psycopg2.errors import UniqueViolation
 
 from schemas.pagination import Pagination
+from utils.validators import validate_ids
 
 T = TypeVar("Model")
 
@@ -13,6 +18,7 @@ class BaseService:
     """
     async service
     Contains all user business logic
+    set model that you want to bind with service into 'model' property
 
     all methods that writes in database use session 'flush' method
     you must call built in 'commit' method after finish you logic
@@ -21,6 +27,8 @@ class BaseService:
     _session: AsyncSession = None
     _in_load_attributes: Sequence[str] = None
     model: T
+    fk_fields_on_create: Dict[T, List[str]] = []
+    fk_fields_on_update: Dict[T, List[str]] = []
 
     def __init__(
         self,
@@ -31,11 +39,17 @@ class BaseService:
         self._in_load_attributes = in_load_attributes
     
     async def finish(self):
-        await self._session.commit()
-        await self.close_session()
+        if self._session is not None:
+            await self._session.commit()
+            await self.close_session()
     
     async def commit(self):
         await self._session.commit()
+        # try:
+        #     await self._session.commit()
+        # except exc.IntegrityError as exception:
+        #     if isinstance(exception.orig, UniqueViolation):
+        #         pass
 
     async def close_session(self):
         if self._session is not None:
@@ -57,7 +71,7 @@ class BaseService:
             attribute_names=attribute_names
         )
 
-    async def _generate_statement(
+    def _generate_statement(
         self,
         *conditions: Sequence[Any],
         options: Sequence[Any] = [],
@@ -75,8 +89,30 @@ class BaseService:
         if filter is not None:
             stmt = filter.filter(stmt)
         return stmt
-        
-    
+
+
+    async def validate_ids(
+            self,
+            data_schema: BaseModel,
+            fk_fields: Dict[Any, str]
+    ):
+        try:
+            models_ids = defaultdict(list)
+            for model, fields in fk_fields.items():
+                models_ids[model] = [
+                    getattr(data_schema, field) for field in fields
+                ]
+        except AttributeError as e:
+            e.add_note(
+                "check the fields in fk_fields_on_update "
+                "and fk_fields_on_create attributes in Service class"
+                )
+            raise
+
+        await validate_ids(
+            self._session,
+            models_ids=models_ids
+        )
 
     async def get(
         self,
@@ -85,7 +121,7 @@ class BaseService:
         throw_exception: bool = False,
     ) -> T | None:
         stmt = self._generate_statement(
-            conditions,
+            *conditions,
             options=options
         )
         result = await self._session.execute(stmt)
@@ -105,7 +141,7 @@ class BaseService:
         filter: Filter = None,
     ) -> Sequence[T]:
         stmt = self._generate_statement(
-            conditions,
+            *conditions,
             options=options,
             filter=filter
         )
@@ -121,7 +157,7 @@ class BaseService:
         limit: int = 20,
         page: int = 1
     ) -> Dict[str, Any]:
-        stmt = await self._generate_statement(
+        stmt = self._generate_statement(
             *conditions,
             options=options,
             filter=filter
@@ -132,12 +168,12 @@ class BaseService:
         result = await self._session.execute(stmt)
         items = result.scalars().all()
         offset = limit * (page-1)
-        total = ceil((total_result if total_result else 0) / limit)
-        page = total if page > total else page
+        total_pages = ceil((total_result if total_result else 1) / limit)
+        page = total_pages if page > total_pages else page
         response = {
             'items' : items,
             'pagination': Pagination(
-                total=total,
+                total_pages=total_pages,
                 page=page,
                 size=limit
             )
@@ -148,7 +184,7 @@ class BaseService:
     async def update_by_id(
         self,
         id: int,
-        update: Dict
+        update_data: BaseModel
     ) -> T:
         scalar = await self.get(
             self.model.id==id,
@@ -156,7 +192,7 @@ class BaseService:
         )
         updated_user = await self.update(
             scalar=scalar,
-            update=update,
+            update_data=update_data,
             session=self._session
         )
         return updated_user
@@ -165,9 +201,14 @@ class BaseService:
     async def update(
         self,
         scalar: T,
-        update: Dict
+        update_data: BaseModel
         ) -> T:
-        for key, value in update.items():
+        await self.validate_ids(
+            update_data,
+            self.fk_fields_on_update
+        )
+        update_dump = update_data.model_dump()
+        for key, value in update_dump.items():
             setattr(scalar, key, value)
         await self._session.flush()
         return scalar

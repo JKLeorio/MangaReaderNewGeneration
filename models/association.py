@@ -19,7 +19,7 @@ class UserLibraryItem(Base):
         primary_key=True, 
         autoincrement=True
         )
-    type: Mapped[int] = mapped_column(
+    type: Mapped[UserLIbraryItemStatus] = mapped_column(
         Enum(UserLIbraryItemStatus), default=UserLIbraryItemStatus.READING
     )
     comic_id: Mapped[int] = mapped_column(

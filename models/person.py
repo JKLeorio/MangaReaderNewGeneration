@@ -2,6 +2,10 @@ from datetime import date
 from sqlalchemy import Date, ForeignKey, String, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
+
+import urllib
+
+from settings import MEDIA_URL
 from .base import Base, FileMixin
 
 # if TYPE_CHECKING:
@@ -27,7 +31,7 @@ class Person(FileMixin, Base):
     birth_date: Mapped[date] = mapped_column(Date, nullable=True)
     avatar_url: Mapped[str] = mapped_column(
         String,
-        default="default_avatar.png",
+        default=urllib.parse.urljoin(MEDIA_URL, "default_avatar.jpg"),
         nullable=True
     )
     # avatar_id: Mapped[int] = mapped_column(

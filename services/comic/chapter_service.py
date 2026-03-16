@@ -5,12 +5,19 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 
-from models.comic import Chapter
+from models.comic import Chapter, Comic
 from schemas.comic import ChapterCreate
 from ..base_service import BaseService
 
 class ChapterService(BaseService):
     model = Chapter
+
+    fk_fields_on_create = {
+        Comic : ["comic_id"]
+    }
+    fk_fields_on_update = {
+        Comic : ["comic_id"]
+    }
 
     async def create(
         self,
@@ -18,8 +25,7 @@ class ChapterService(BaseService):
     ) -> Chapter:
         new_chapter = Chapter(**create_data.model_dump())
         self._session.add(new_chapter)
-        await self.commit()
-        await self.refresh(new_chapter)
+        await self._session.flush()
         return new_chapter
 
     async def get_chapter_with_pages(

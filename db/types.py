@@ -2,20 +2,20 @@ from enum import Enum
 
 
 class Role(str, Enum):
-    ADMIN = "ADMIN"
-    USER = "USER"
+    ADMIN = "Admin"
+    USER = "User"
 
 
 class TranslateStatus(str, Enum):
-    NOT_TRANSLATED = "Not translated"
-    IN_PRODUCTION = "In production"
+    NOT_TRANSLATED = "Not_translated" 
+    IN_PRODUCTION = "In_production"
     FROZEN = "Frozen"
     TRANSLATED = "Translated"
 
 
 class ReleaseStatus(str, Enum):
     RELEASED = "Released"
-    IN_PRODUCTION = "In production"
+    IN_PRODUCTION = "In_production"
     FROZEN = "Frozen"
 
 class ImageExtensions(str, Enum):
@@ -23,7 +23,7 @@ class ImageExtensions(str, Enum):
 
 class UserLIbraryItemStatus(str, Enum):
     READING = "Reading"
-    IN_PLANS = "In plans"
+    IN_PLANS = "In_plans"
     ABANDONED = "Abandoned"
     FAVORITE = "Favorite"
 
@@ -34,4 +34,10 @@ class ComicType(str, Enum):
     MANHWA = "Manhwa"
     COMIC = "Comic"
     MANHUA = "Manhua"
-    OEL_MANGA = "Oel manga"
+    OEL_MANGA = "Oel_manga"
+
+
+class CommentRefers(str, Enum):
+    PERSON = "Person"
+    PAGE = "Page"
+    COMIC = "Comic"

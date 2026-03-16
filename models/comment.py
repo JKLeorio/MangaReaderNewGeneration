@@ -1,9 +1,10 @@
 import typing
 
 from datetime import datetime
-from sqlalchemy import String, Integer, ForeignKey, DateTime, Text
+from sqlalchemy import String, Integer, ForeignKey, DateTime, Text, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from db.types import CommentRefers
 from utils.datetime_utils import get_current_time
 
 from .base import Base
@@ -22,15 +23,13 @@ class Comment(Base):
     content: Mapped[int] = mapped_column(
         Text
         )
-    page_id: Mapped[int] = mapped_column(
-        ForeignKey("pages.id", ondelete="CASCADE")
+    
+    record_id: Mapped[int] = mapped_column(
+        Integer
     )
-    page: Mapped["Page"] = relationship(
-        "Page",
-        foreign_keys=[page_id],
-        passive_deletes=True
+    refers_to: Mapped[CommentRefers] = mapped_column(
+        Enum(CommentRefers, names="comment_refers",),
     )
-
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=get_current_time
@@ -48,7 +47,11 @@ class Comment(Base):
     parent_id: Mapped[int] = mapped_column(
         ForeignKey("comments.id", ondelete="SET NULL")
     )
+
+    parent: Mapped["Comment"] = relationship(
+        "Comment", back_populates="childrens", remote_side=[id]
+    )
     
     childrens: Mapped[list["Comment"]] = relationship(
-        "Comment"
+        "Comment", back_populates='parent'
     )

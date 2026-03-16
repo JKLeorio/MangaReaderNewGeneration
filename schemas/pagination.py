@@ -4,15 +4,15 @@ from pydantic import BaseModel, Field, ValidationError
 
 
 class Pagination(BaseModel):
-    total: int = None
-    page: int = Field(default=0, gt=0)
+    total_pages: int = None
+    page: int = Field(default=1, gt=0)
     size: int = Field(default=20, gt=0, le=100)
 
     @classmethod
     def as_query(
         cls,
-        page: Annotated[int, Query()],
-        size: Annotated[int, Query()]
+        page: Annotated[int, Query()] = 1,
+        size: Annotated[int, Query()] = 20
         ) -> 'Pagination':
         try:
             return cls(

@@ -2,7 +2,7 @@ from typing import Annotated, List, Optional
 from fastapi import File, Form, UploadFile
 from pydantic import BaseModel
 from fastapi_filter.contrib.sqlalchemy import Filter
-from db.types import ComicType
+from db.types import ComicType, ReleaseStatus, TranslateStatus
 from models.comic import Comic
 from schemas.cover import CoverResponse
 from schemas.pagination import Pagination
@@ -17,6 +17,8 @@ class ComicBase(BaseModel):
     release_date: int
     author_id: int
     artist_id: int
+    release_status: ReleaseStatus
+    translate_status: TranslateStatus
 
 class ComicResponse(BaseModel):
     id: int
@@ -29,6 +31,8 @@ class ComicResponse(BaseModel):
     cover_url: str
     genres: List["GenreBase"]
     # covers: list[CoverResponse]
+    release_status: ReleaseStatus
+    translate_status: TranslateStatus
 
 
 
@@ -44,15 +48,19 @@ class ComicPartialUpdate(BaseModel):
     release_date: Optional[int] = None
     author_id: Optional[int] = None
     artist_id: Optional[int] = None
+    release_status: ReleaseStatus
+    translate_status: TranslateStatus
 
 
 class ComicCreate(BaseModel):
     title: str
     description: Optional[str] = None
-    type: ComicType
+    type: ComicType = ComicType.MANGA
     release_date: int
     author_id: int | None = None
     artist_id: int | None = None
+    release_status: ReleaseStatus = ReleaseStatus.IN_PRODUCTION
+    translate_status: TranslateStatus = TranslateStatus.IN_PRODUCTION
 
     @classmethod
     def as_form(

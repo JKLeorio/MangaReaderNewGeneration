@@ -17,6 +17,7 @@ from api.manga import (
 )
 from api.person import person_router
 from api.media import media_router
+from api.comment import comment_router
 
 app = fastapi.FastAPI()
 
@@ -61,6 +62,13 @@ app.include_router(
     prefix="/persons",
     tags=["Persons"]
 )
+
+app.include_router(
+    comment_router,
+    prefix="/comments",
+    tags=["Comments"]
+)
+
 app.include_router(
     media_router,
     prefix="/media",

@@ -1,14 +1,15 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
-from schemas.comic import PageBase
+from db.types import CommentRefers
 from schemas.user import UserBase
 
 
 class CommentBase(BaseModel):
     id: int
-    page_id: int
+    record_id: int
+    refers_to: CommentRefers
     content: str
     created_at: datetime
     owner_id: int
@@ -16,15 +17,21 @@ class CommentBase(BaseModel):
 class CommentResponse(BaseModel):
     id: int
     content: str
-    page: PageBase
+    refers_to: CommentRefers
+    record_id: int
     created_at: datetime
     owner: UserBase
     childrens: 'Optional[CommentResponse]' = None
 
+    model_config = ConfigDict(from_attributes=True)
+
+
 class CommentCreate(BaseModel):
     content: str
-    page_id: int
+    record_id: int
+    refers_to: CommentRefers
     # owner_id: int
+    parent_id: Optional[int] = None
 
 class CommentPartialUpdate(BaseModel):
     content: Optional[str] = None

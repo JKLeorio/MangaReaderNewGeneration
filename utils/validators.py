@@ -1,6 +1,5 @@
-from typing import Any, Dict
+from typing import Any, Dict, Iterable
 from fastapi import HTTPException, status
-from sqlalchemy import Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -26,7 +25,7 @@ def dict_comparator(
 
 async def validate_ids(
         session: AsyncSession,
-        models_ids: Dict[Any, Sequence[int]]
+        models_ids: Dict[Any, Iterable[int]]
         ):
     for model, ids in models_ids.items():
         for id in ids:

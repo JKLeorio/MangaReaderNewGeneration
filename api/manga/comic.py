@@ -19,7 +19,7 @@ comic_router = APIRouter()
 
 
 @comic_router.get(
-    "/comics",
+    "/",
     response_model=ComicsPaginated,
     status_code=status.HTTP_200_OK
 )
@@ -30,27 +30,10 @@ async def get_comics(
     # user: User = Depends(current_user),
 ):
     comic_service = ComicService(session=session)
-    paginated_comics = await comic_service.get_paginated(
-        filter=filter,
-        limit=pagination.size,
-        page=pagination.page,
-        options=[
-            joinedload(Comic.artist),
-            joinedload(Comic.author),
-            selectinload(Comic.genres)
-        ]
-    )
-    comics = paginated_comics.get('items')
-    pagination_status = paginated_comics.get('pagination')
-    response = ComicsPaginated(
-        comics=[
-            ComicResponse.model_validate(
-                comic,
-                from_attributes=True
-            ) for comic in comics
-        ],
-        pagination=pagination_status
-    )
+    response = await comic_service.get_paginated_comics(
+        pagination=pagination, 
+        filter=filter
+        )
     return response
 
 @comic_router.get(

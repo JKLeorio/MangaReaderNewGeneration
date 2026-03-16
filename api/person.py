@@ -59,8 +59,8 @@ async def create_person(
 ):
     person_service = PersonService(session=session)
     new_person = await person_service.create(
-        create_data,
-        avatar_img
+        avatar_img=avatar_img,
+        person_data=create_data,
     )
     await person_service.commit()
     # await person_service.refresh(new_person, attribute_names=['avatar'])
