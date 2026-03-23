@@ -5,7 +5,7 @@ from fastapi import (
     )
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.auth.auth import TokenResponse
+from api.auth.main import TokenResponse
 from db.database import get_async_session
 from schemas.auth.payload import PayloadBase
 from schemas.auth.register import UserRegister

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, ConfigDict
 
 from db.types import CommentRefers
@@ -21,7 +21,7 @@ class CommentResponse(BaseModel):
     record_id: int
     created_at: datetime
     owner: UserBase
-    childrens: 'Optional[CommentResponse]' = None
+    childrens: Optional[List['CommentResponse']] = []
 
     model_config = ConfigDict(from_attributes=True)
 

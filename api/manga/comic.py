@@ -12,7 +12,7 @@ from schemas.pagination import Pagination
 from services.comic.chapter_service import ChapterService
 from services.comic.comic_service import ComicService
 from utils.validators import validate_ids
-from ..auth.auth import oauth2_scheme
+from ..auth.main import oauth2_scheme
 
 comic_router = APIRouter()
 

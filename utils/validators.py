@@ -25,10 +25,13 @@ def dict_comparator(
 
 async def validate_ids(
         session: AsyncSession,
-        models_ids: Dict[Any, Iterable[int]]
+        models_ids: Dict[Any, Iterable[int]],
+        ignore_None: bool = True
         ):
     for model, ids in models_ids.items():
         for id in ids:
+            if ignore_None and id is None:
+                continue
             if (await session.get(model, id)) is None:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,

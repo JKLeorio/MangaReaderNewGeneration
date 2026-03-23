@@ -13,7 +13,7 @@ from settings import TOKEN_LIFETIME
 from utils.datetime_utils import get_current_time
 from utils.jwt import generate_jwt
 from utils.security import validate_password
-from .auth import TokenResponse
+from .main import TokenResponse
 
 auth_router = APIRouter()
 

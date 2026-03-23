@@ -97,7 +97,7 @@ class BaseService:
             fk_fields: Dict[Any, str]
     ):
         try:
-            models_ids = defaultdict(list)
+            models_ids = dict()
             for model, fields in fk_fields.items():
                 models_ids[model] = [
                     getattr(data_schema, field) for field in fields
@@ -146,8 +146,8 @@ class BaseService:
             filter=filter
         )
         result = await self._session.execute(stmt)
-        users = result.scalars().all()
-        return users
+        records = result.scalars().all()
+        return records
     
     async def get_paginated(
         self,

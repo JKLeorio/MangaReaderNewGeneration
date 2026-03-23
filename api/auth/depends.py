@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, status
 from typing import Annotated, Awaitable
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .auth import oauth2_scheme
+from .main import oauth2_scheme
 from models.user import User
 from services.user_service import UserService
 from utils.jwt import validate_jwt
@@ -26,7 +26,7 @@ async def current_user(
     user = await user_service.get_user(User.id == user_id)
     if user is None:
         raise credentials_exception
-    if (user.login != payload.login) and (user.email != payload.email):
+    if (user.username != payload.username) and (user.email != payload.email):
         raise credentials_exception
     return user
 

@@ -1,8 +1,8 @@
 import typing
 
 from datetime import datetime
-from sqlalchemy import String, Integer, ForeignKey, DateTime, Text, Enum
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import SmallInteger, Integer, ForeignKey, DateTime, Text, Enum
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from db.types import CommentRefers
 from utils.datetime_utils import get_current_time
@@ -44,8 +44,14 @@ class Comment(Base):
         passive_deletes=True
     )
 
+    depth: Mapped[SmallInteger] = mapped_column(
+        Integer,
+        default=0
+    )
+
     parent_id: Mapped[int] = mapped_column(
-        ForeignKey("comments.id", ondelete="SET NULL")
+        ForeignKey("comments.id", ondelete="SET NULL"),
+        nullable=True
     )
 
     parent: Mapped["Comment"] = relationship(
@@ -53,5 +59,12 @@ class Comment(Base):
     )
     
     childrens: Mapped[list["Comment"]] = relationship(
-        "Comment", back_populates='parent'
+        "Comment", back_populates='parent', lazy="joined",join_depth=5,
     )
+    @validates("depth")
+    def depth_max(self, key, depth: int):
+        if not (5 >= depth >= 0):
+            raise ValueError(
+                "depth must be in range 0-5"
+            )
+        return depth

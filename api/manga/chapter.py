@@ -9,7 +9,7 @@ from db.database import get_async_session
 from models.comic import Chapter
 from schemas.comic import ChapterCreate, ChapterPartialUpdate, ChapterResponse, ChapterWithPagesResponse
 from services.comic.chapter_service import ChapterService
-from ..auth.auth import oauth2_scheme
+from ..auth.main import oauth2_scheme
 from .comic import comic_router
 
 

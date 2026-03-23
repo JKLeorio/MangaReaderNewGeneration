@@ -4,8 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.database import get_async_session
 from models.comment import Comment
+from models.user import User
 from services.comment_service import CommentService
 from schemas.comment import CommentCreate, CommentPartialUpdate, CommentResponse
+from api.auth.depends import current_user
 
 comment_router = APIRouter()
 
@@ -62,14 +64,16 @@ async def get_comic_comments(
 )
 async def create_comment(
     comment_data: CommentCreate,
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_user)
 ):
     comment_service = CommentService(session=session)
     new_comment = await comment_service.create(
-        comment_data=comment_data
+        comment_data=comment_data,
+        comment_owner=user
     )
     await comment_service.commit()
-    await comment_service.refresh(new_comment)
+    await comment_service.refresh(new_comment, ['childrens'])
     return new_comment
 
 
@@ -81,7 +85,7 @@ async def create_comment(
 async def update_comment(
     comment_id: int,
     comment_update: CommentPartialUpdate,
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
 ):
     comment_service = CommentService(session=session)
     updated_comment = await comment_service.update_by_id(

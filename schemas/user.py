@@ -13,11 +13,11 @@ class UserShort(BaseModel):
 
 class UserBase(BaseModel):
     id: int
-    first_name: str
-    last_name: str
+    first_name: Optional[str]
+    last_name: Optional[str]
     username: str
     email: str
-    birth_date: date
+    birth_date: Optional[date]
     role: Role
 
 
