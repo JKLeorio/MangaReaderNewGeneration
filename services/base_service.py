@@ -76,6 +76,7 @@ class BaseService:
         *conditions: Sequence[Any],
         options: Sequence[Any] = [],
         filter: Filter = None,
+        order_by: Sequence[Any] = []
     ) -> Select[Any]:
         stmt = (
             select(self.model)
@@ -85,6 +86,9 @@ class BaseService:
             .options(
                 *options
                 )
+            .order_by(
+                *order_by
+            )
             )
         if filter is not None:
             stmt = filter.filter(stmt)
@@ -139,14 +143,20 @@ class BaseService:
         *conditions: Sequence[Any],
         options: Sequence[Any] = [],
         filter: Filter = None,
+        unique: bool = False,
+        order_by: Sequence[Any] = []
     ) -> Sequence[T]:
         stmt = self._generate_statement(
             *conditions,
             options=options,
-            filter=filter
+            filter=filter,
+            order_by=order_by
         )
         result = await self._session.execute(stmt)
-        records = result.scalars().all()
+        if unique is True:
+            records = result.unique().scalars().all()
+        else:
+            records = result.scalars().all()
         return records
     
     async def get_paginated(

@@ -59,7 +59,7 @@ class Comment(Base):
     )
     
     childrens: Mapped[list["Comment"]] = relationship(
-        "Comment", back_populates='parent', lazy="joined",join_depth=5,
+        "Comment", back_populates='parent'
     )
     @validates("depth")
     def depth_max(self, key, depth: int):

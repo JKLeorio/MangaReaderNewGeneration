@@ -1,3 +1,6 @@
+from collections import defaultdict
+from typing import Any, List
+
 from pydantic import BaseModel
 from sqlalchemy import Sequence
 from sqlalchemy.orm import joinedload
@@ -5,7 +8,7 @@ from sqlalchemy.orm import joinedload
 from models.comic import Comic, Page
 from models.person import Person
 from models.user import User
-from schemas.comment import CommentCreate
+from schemas.comment import CommentCreate, CommentResponse
 from .base_service import BaseService
 from db.types import CommentRefers
 from models.comment import Comment
@@ -50,9 +53,9 @@ class CommentService(BaseService):
         self,
         page_id: int
     ) -> Sequence[Comment]:
-        page_comments = await self.get_all(
-            Comment.refers_to == CommentRefers.PAGE,
-            Comment.record_id == page_id,
+        page_comments = await self.get_structed_comments(
+            comment_type=CommentRefers.PAGE,
+            record_id=page_id
         )
         return page_comments
 
@@ -60,9 +63,9 @@ class CommentService(BaseService):
         self,
         person_id: int
     ) -> Sequence[Comment]:
-        person_comments = await self.get_all(
-            Comment.refers_to == CommentRefers.PERSON,
-            Comment.record_id == person_id
+        person_comments = await self.get_structed_comments(
+            comment_type=CommentRefers.PERSON,
+            record_id=person_id
         )
         return person_comments
 
@@ -70,13 +73,39 @@ class CommentService(BaseService):
         self,
         comic_id: int
     ) -> Sequence[Comment]:
-        comic_comments = await self.get_all(
-            Comment.refers_to == CommentRefers.COMIC,
-            Comment.record_id == comic_id,
-            # options=[
-            #     joinedload(
-            #         Comment.childrens
-            #     )
-            # ]
+        comic_comments = await self.get_structed_comments(
+            comment_type=CommentRefers.COMIC,
+            record_id=comic_id
         )
         return comic_comments
+    
+    def link_comments_by_id(
+        comments: Sequence[Any]|List
+    ) -> List[CommentResponse]:
+        comments_by_depth = defaultdict(dict)
+        while comments:
+            comment = comments.pop(0)
+            comments_by_depth[comment.depth][comment.id] = comment
+
+        for depth in range(len(comments_by_depth), 0, -1):
+            upper_level_comments = comments_by_depth[depth+1]
+            for comment_id, comment in comments_by_depth[depth].items():
+                upper_comment: Comment = upper_level_comments.get(comment.parent_id)
+                upper_comment.childrens.append(comment)
+
+        return comments_by_depth[0]
+
+    
+    async def get_structed_comments(
+        self,
+        comment_type: CommentRefers,
+        record_id: int
+    ) -> List[CommentResponse]:
+        comments = await self.get_all(
+            Comment.refers_to == comment_type,
+            Comment.record_id == record_id,
+            order_by=[
+                Comment.depth.asc()
+            ]
+        )
+        

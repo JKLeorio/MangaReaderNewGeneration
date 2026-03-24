@@ -73,7 +73,7 @@ async def create_comment(
         comment_owner=user
     )
     await comment_service.commit()
-    await comment_service.refresh(new_comment, ['childrens'])
+    await comment_service.refresh(new_comment)
     return new_comment
 
 

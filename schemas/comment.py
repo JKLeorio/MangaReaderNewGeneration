@@ -19,6 +19,7 @@ class CommentResponse(BaseModel):
     content: str
     refers_to: CommentRefers
     record_id: int
+    parent_id: int
     created_at: datetime
     owner: UserBase
     childrens: Optional[List['CommentResponse']] = []
