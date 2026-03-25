@@ -16,7 +16,7 @@ from models.comment import Comment
 class CommentService(BaseService):
     model = Comment
     fk_fields_on_create = {
-        Comment : ["parent_id"],
+        # Comment : ["parent_id"],
         # User : ["owner_id"],
     }
     fk_fields_on_update = {}
@@ -43,7 +43,19 @@ class CommentService(BaseService):
             comment_data,
             model_ids
         )
-        new_comment = Comment(**comment_data.model_dump(), owner_id=comment_owner.id)
+        
+        depth = 0
+        if comment_data.parent_id is not None:
+            parent_comment = await self.get(
+                comment_data.parent_id
+            )
+            depth = parent_comment.depth + 1
+
+        new_comment = Comment(
+            **comment_data.model_dump(), 
+            owner_id=comment_owner.id,
+            depth=depth
+            )
         self._session.add(new_comment)
         await self._session.flush()
         return new_comment
@@ -108,4 +120,8 @@ class CommentService(BaseService):
                 Comment.depth.asc()
             ]
         )
+        comments_response = self.link_comments_by_id(
+            comments
+        )
+        return comments_response
         

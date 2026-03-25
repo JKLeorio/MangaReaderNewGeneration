@@ -8,21 +8,26 @@ from schemas.user import UserBase
 
 class CommentBase(BaseModel):
     id: int
-    record_id: int
-    refers_to: CommentRefers
     content: str
+    refers_to: CommentRefers
+    record_id: int
+    parent_id: Optional[int] = None
+    depth: int
     created_at: datetime
     owner_id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 class CommentResponse(BaseModel):
     id: int
     content: str
     refers_to: CommentRefers
     record_id: int
-    parent_id: int
+    parent_id: Optional[int] = None
+    depth: int
     created_at: datetime
     owner: UserBase
-    childrens: Optional[List['CommentResponse']] = []
+    childrens: Optional[List['CommentResponse']] = None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -6,7 +6,7 @@ from db.database import get_async_session
 from models.comment import Comment
 from models.user import User
 from services.comment_service import CommentService
-from schemas.comment import CommentCreate, CommentPartialUpdate, CommentResponse
+from schemas.comment import CommentBase, CommentCreate, CommentPartialUpdate, CommentResponse
 from api.auth.depends import current_user
 
 comment_router = APIRouter()
@@ -59,7 +59,7 @@ async def get_comic_comments(
 
 @comment_router.post(
     "/",
-    response_model=CommentResponse,
+    response_model=CommentBase,
     status_code=status.HTTP_201_CREATED
 )
 async def create_comment(
