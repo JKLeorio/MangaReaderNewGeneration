@@ -13,7 +13,8 @@ from api.auth import (
 from api.manga import (
     comic_router,
     page_router,
-    chapter_router
+    chapter_router,
+    genre_router
 )
 from api.person import person_router
 from api.media import media_router
@@ -56,6 +57,11 @@ app.include_router(
     page_router,
     prefix="/pages",
     tags=["Pages"]
+)
+app.include_router(
+    genre_router,
+    prefix="/genres",
+    tags=["Genres"]
 )
 app.include_router(
     person_router,

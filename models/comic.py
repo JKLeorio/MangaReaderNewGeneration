@@ -5,6 +5,7 @@ from sqlalchemy import Integer, String, Text, ForeignKey, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.types import ComicType, ReleaseStatus, TranslateStatus
+from models.genre import ComicGenre
 from .base import Base, FileMixin
 
 
@@ -66,10 +67,10 @@ class Comic(FileMixin, Base):
         order_by="Chapter.position",
         cascade="all, delete-orphan"
     )
-    genres: Mapped[list["ComicGenres"]] = relationship(
-        "ComicGenres",
+    genres: Mapped[list["ComicGenre"]] = relationship(
+        "ComicGenre",
         passive_deletes=True,
-        foreign_keys="ComicGenres.comic_id"
+        foreign_keys="ComicGenre.comic_id"
     )
     # covers: Mapped[list["Cover"]] = relationship(
     #     "Cover",
@@ -159,34 +160,3 @@ class Page(FileMixin, Base):
     # def image_url(self) -> str:
     #     return self.image.url
 
-
-
-class Genre(Base):
-    __tablename__ = "genres"
-
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-        )
-    name: Mapped[str] = mapped_column(
-        String
-    )
-    comics: Mapped[list["ComicGenres"]] = relationship(
-        "ComicGenres",
-        passive_deletes=True,
-        foreign_keys="ComicGenres.genre_id"
-    )
-
-
-
-class ComicGenres(Base):
-    __tablename__ = "comic_genres"
-
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-        )
-    comic_id: Mapped[int] = mapped_column(
-        ForeignKey("comics.id", ondelete="CASCADE")
-    )
-    genre_id: Mapped[int] = mapped_column(
-        ForeignKey("genres.id", ondelete="CASCADE")
-    )

@@ -3,8 +3,9 @@ from fastapi import File, Form, UploadFile
 from pydantic import BaseModel
 from fastapi_filter.contrib.sqlalchemy import Filter
 from db.types import ComicType, ReleaseStatus, TranslateStatus
-from models.comic import Comic
+from models.comic import Comic, ComicGenre
 from schemas.cover import CoverResponse
+from schemas.genre import GenreBase
 from schemas.pagination import Pagination
 from schemas.person import PersonBase, PersonResponse
 
@@ -29,10 +30,11 @@ class ComicResponse(BaseModel):
     author: PersonResponse
     artist: PersonResponse
     cover_url: str
-    genres: List["GenreBase"]
+    genres: Optional[List["GenreBase"]] = []
     # covers: list[CoverResponse]
     release_status: ReleaseStatus
     translate_status: TranslateStatus
+
 
 
 
@@ -61,6 +63,7 @@ class ComicCreate(BaseModel):
     artist_id: int | None = None
     release_status: ReleaseStatus = ReleaseStatus.IN_PRODUCTION
     translate_status: TranslateStatus = TranslateStatus.IN_PRODUCTION
+    genres: Optional[List["GenreBase"]] = []
 
     @classmethod
     def as_form(
@@ -164,7 +167,3 @@ class ComicFilter(Filter):
     class Constants(Filter.Constants):
         model = Comic
 
-
-class GenreBase(BaseModel):
-    id: int
-    name: str
