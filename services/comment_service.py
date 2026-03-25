@@ -3,7 +3,7 @@ from typing import Any, List
 
 from pydantic import BaseModel
 from sqlalchemy import Sequence
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, noload
 
 from models.comic import Comic, Page
 from models.person import Person
@@ -47,7 +47,7 @@ class CommentService(BaseService):
         depth = 0
         if comment_data.parent_id is not None:
             parent_comment = await self.get(
-                comment_data.parent_id
+                Comment.id == comment_data.parent_id
             )
             depth = parent_comment.depth + 1
 
@@ -92,6 +92,7 @@ class CommentService(BaseService):
         return comic_comments
     
     def link_comments_by_id(
+        self,
         comments: Sequence[Any]|List
     ) -> List[CommentResponse]:
         comments_by_depth = defaultdict(dict)
@@ -100,12 +101,12 @@ class CommentService(BaseService):
             comments_by_depth[comment.depth][comment.id] = comment
 
         for depth in range(len(comments_by_depth), 0, -1):
-            upper_level_comments = comments_by_depth[depth+1]
+            upper_level_comments = comments_by_depth[depth-1]
             for comment_id, comment in comments_by_depth[depth].items():
                 upper_comment: Comment = upper_level_comments.get(comment.parent_id)
                 upper_comment.childrens.append(comment)
 
-        return comments_by_depth[0]
+        return list(comments_by_depth[0].values())
 
     
     async def get_structed_comments(
@@ -116,6 +117,10 @@ class CommentService(BaseService):
         comments = await self.get_all(
             Comment.refers_to == comment_type,
             Comment.record_id == record_id,
+            options=[
+                noload(Comment.childrens),
+                joinedload(Comment.owner)
+            ],
             order_by=[
                 Comment.depth.asc()
             ]

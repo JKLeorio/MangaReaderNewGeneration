@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncAttrs
 
 from utils.media_client import delete_file
 
-
 class Base(DeclarativeBase, AsyncAttrs):
     pass
 
