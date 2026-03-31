@@ -74,6 +74,7 @@ class ComicCreate(BaseModel):
         description: Annotated[str | None, Form()] = None,
         author_id: Annotated[int | None, Form()] = None,
         artist_id: Annotated[int | None, Form()] = None,
+        genres: Annotated[List[int] | None, Form()] = None
     ) -> "ComicCreate":
         return cls(
             title=title,
@@ -82,6 +83,7 @@ class ComicCreate(BaseModel):
             release_date=release_date,
             author_id=author_id,
             artist_id=artist_id,
+            genres=genres
         )
 
 

@@ -43,6 +43,7 @@ class ComicService(BaseService):
             self.fk_fields_on_create
         )
         cover_url = await upload_file(file=cover_img)
+        
         try:
             new_comic = Comic(
                 # title=ComicCreateForm.title,

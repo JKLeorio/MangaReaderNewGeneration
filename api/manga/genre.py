@@ -47,13 +47,3 @@ async def create_genre(
     return new_genre
 
 
-@genre_router.post(
-    '/',
-    response_model=ComicGenreBase,
-    status = status.HTTP_201_CREATED
-)
-async def create_comic_genre(
-    comic_genre_data: ComicGenreCreate,
-    session: AsyncSession = Depends(get_async_session)
-):
-    pass
