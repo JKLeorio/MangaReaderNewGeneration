@@ -94,7 +94,6 @@ class BaseService:
             stmt = filter.filter(stmt)
         return stmt
 
-
     async def validate_ids(
             self,
             data_schema: BaseModel,
@@ -194,16 +193,17 @@ class BaseService:
     async def update_by_id(
         self,
         id: int,
-        update_data: BaseModel
+        update_data: BaseModel,
+        options: list[Any] = []
     ) -> T:
         scalar = await self.get(
             self.model.id==id,
-            throw_exception=True
+            throw_exception=True,
+            options=options
         )
         updated_user = await self.update(
             scalar=scalar,
-            update_data=update_data,
-            session=self._session
+            update_data=update_data
         )
         return updated_user
 
@@ -217,7 +217,7 @@ class BaseService:
             update_data,
             self.fk_fields_on_update
         )
-        update_dump = update_data.model_dump()
+        update_dump = update_data.model_dump(exclude_none=True)
         for key, value in update_dump.items():
             setattr(scalar, key, value)
         await self._session.flush()

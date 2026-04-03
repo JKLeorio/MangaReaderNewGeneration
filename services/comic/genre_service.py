@@ -1,12 +1,11 @@
-from typing import List
-
-from utils.validators import validate_ids
+from typing import Set
+from fastapi import HTTPException, status
 
 from ..base_service import BaseService
 
 from models.comic import Comic
-from models.genre import ComicGenre, Genre
-from schemas.genre import ComicGenreCreate, GenreCreate
+from models.genre import Genre
+from schemas.genre import GenreCreate
 
 
 class GenreService(BaseService):
@@ -16,8 +15,9 @@ class GenreService(BaseService):
         self,
         genre_data: GenreCreate
     ):
+        genre_dump = genre_data.model_dump()
         new_genre = Genre(
-            **genre_data
+            **genre_dump
         )
         self._session.add(new_genre)
         await self._session.flush()
@@ -27,51 +27,19 @@ class GenreService(BaseService):
         genres = await self.get_all()
         return genres
 
-
-class ComicGenresService(BaseService):
-    model = ComicGenre
-
-    fk_fields_on_create = {
-        Comic: ["comic_id"],
-        Genre : ["genre_id"]
-    }
-
-    async def create(
-        self,
-        comic_genres_data: ComicGenreCreate
-    ):
-        await self.validate_ids(
-            comic_genres_data
-        )
-        new_comic_genre = ComicGenre(
-            **comic_genres_data
-        )
-        self._session.add(
-            new_comic_genre
-        )
-        await self._session.flush()
-        return new_comic_genre
-    
-
     async def bind_comic_genres(
         self,
-        comic_id: int,
-        genres_ids: List[int]
+        comic_record: Comic,
+        genres_ids: Set[int]
     ):
-        models_ids = {
-            Comic : [comic_id],
-            Genre: genres_ids
-        }
-        await validate_ids(
-            self._session,
-            models_ids=models_ids
+        genres = await self.get_all(
+            Genre.id.in_(genres_ids)
         )
-        comic_genres = []
-        for genre_id in genres_ids:
-            comic_genre = ComicGenre(
-                comic_id=comic_id,
-                genre_id=genre_id
+        
+        if len(genres) != len(genres_ids):
+            raise HTTPException(
+                detail="Fill genres with exist ids",
+                status_code=status.HTTP_404_NOT_FOUND
             )
-            comic_genres.append(comic_genre)
-            self._session.add(comic_genre)
+        comic_record.genres = genres
         await self._session.flush()

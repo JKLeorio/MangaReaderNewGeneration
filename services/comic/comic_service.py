@@ -1,5 +1,5 @@
 from typing import Any
-from fastapi import UploadFile
+from fastapi import HTTPException, UploadFile, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload, selectinload
@@ -7,8 +7,10 @@ from fastapi_filter.contrib.sqlalchemy import Filter
 
 from models.comic import Chapter, Comic
 from models.person import Person
-from schemas.comic import ComicCreate, ComicResponse, ComicsPaginated
+from models.genre import Genre
+from schemas.comic import ComicCreate, ComicPartialUpdate, ComicResponse, ComicsPaginated
 from schemas.pagination import Pagination
+from services.comic.genre_service import GenreService
 from utils.validators import validate_ids
 from ..base_service import BaseService
 from utils.media_client import upload_file, delete_file
@@ -42,24 +44,44 @@ class ComicService(BaseService):
             create_data,
             self.fk_fields_on_create
         )
+        genre_service = GenreService(
+            session=self._session
+        )
         cover_url = await upload_file(file=cover_img)
-        
         try:
+            genres = await genre_service.get_all(
+                Genre.id.in_(create_data.genres)
+            )
+            if len(genres) != len(create_data.genres):
+                raise HTTPException(
+                    detail="Fill genres with exist ids",
+                    status_code=status.HTTP_404_NOT_FOUND
+            )
             new_comic = Comic(
-                # title=ComicCreateForm.title,
-                # type=ComicCreateForm.type,
-                # release_date=ComicCreateForm.release_date,
-                # author_id=ComicCreateForm.author_id,
-                # artist_id=ComicCreateForm.artist_id,
-                **create_data.model_dump(),
+                title=create_data.title,
+                description=create_data.description,
+                type=create_data.type,
+                release_date=create_data.release_date,
+                author_id=create_data.author_id,
+                artist_id=create_data.artist_id,
+                release_status=create_data.release_status,
+                translate_status=create_data.translate_status,
+                genres = genres,
                 cover_url = cover_url,
             )
             self._session.add(new_comic)
             await self._session.flush()
+            # await genre_service.bind_comic_genres(
+            #     comic_record=new_comic,
+            #     genres_ids=create_data.genres
+            # )
+            # await self._session.flush()
             return new_comic
         except Exception as error:
             delete_file(cover_url)
             raise
+
+
 
     async def get_paginated_comics(
         self,
@@ -104,6 +126,18 @@ class ComicService(BaseService):
         result = await self._session.execute(stmt)
         comic = result.scalars().first()
         return comic
+
+    async def update(
+            self, 
+            scalar: Comic,
+            update_data: ComicPartialUpdate
+            ):
+        genre_service = GenreService(
+            session=self._session
+        )
+        await genre_service.bind_comic_genres(
+            comic_record=scalar,
+            genres_ids=update_data.genres,
+        )
+        return scalar
     
-    async def update(self, scalar, update):
-        return await super().update(scalar, update)

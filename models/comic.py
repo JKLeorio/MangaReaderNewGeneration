@@ -5,12 +5,13 @@ from sqlalchemy import Integer, String, Text, ForeignKey, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.types import ComicType, ReleaseStatus, TranslateStatus
-from models.genre import ComicGenre
 from .base import Base, FileMixin
+from .association import comic_genre_association_table
 
 
 
 if typing.TYPE_CHECKING:
+    from models.genre import Genre
     from models.person import Person
     from models.user import User
     # from models.image import Image
@@ -67,10 +68,9 @@ class Comic(FileMixin, Base):
         order_by="Chapter.position",
         cascade="all, delete-orphan"
     )
-    genres: Mapped[list["ComicGenre"]] = relationship(
-        "ComicGenre",
-        passive_deletes=True,
-        foreign_keys="ComicGenre.comic_id"
+    genres: Mapped[list["Genre"]] = relationship(
+        secondary=comic_genre_association_table,
+        back_populates="comics"
     )
     # covers: Mapped[list["Cover"]] = relationship(
     #     "Cover",

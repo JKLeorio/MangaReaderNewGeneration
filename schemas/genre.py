@@ -12,15 +12,3 @@ class GenreBase(BaseModel):
 
 class GenreCreate(BaseModel):
     name: str
-
-
-
-
-class ComicGenreBase(BaseModel):
-    comic_id: int
-    genre_id: int
-
-
-class ComicGenreCreate(BaseModel):
-    comic_id: int
-    genre_id: int

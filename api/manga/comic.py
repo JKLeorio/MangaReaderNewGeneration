@@ -1,6 +1,6 @@
 from typing import Annotated, List
 from fastapi import APIRouter, Form, Query, UploadFile, status, Depends
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import noload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_filter import FilterDepends
 
@@ -102,12 +102,13 @@ async def update_comic(
     comic_service = ComicService(session=session)
     comic = await comic_service.update_by_id(
         id=comic_id,
-        update=comic_update
-        )
+        update_data=comic_update,
+        options=[selectinload(Comic.genres)]
+    )
     await comic_service.commit()
     await comic_service.refresh(
         comic,
-        attribute_names=["artist","author", "genres"]
+        attribute_names=["artist","author"]
     )
     return ComicResponse.model_validate(comic, from_attributes=True)
     

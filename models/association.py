@@ -1,6 +1,6 @@
 import typing
 
-from sqlalchemy import ForeignKey, Enum, Integer
+from sqlalchemy import Column, ForeignKey, Enum, Integer, Table
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
 from .base import Base
@@ -38,6 +38,26 @@ class UserLibraryItem(Base):
         foreign_keys=[user_id],
         passive_deletes=True
     )
+
+
+comic_genre_association_table= Table(
+    "comic_genres",
+    Base.metadata,
+    Column(
+        "comic_id", ForeignKey(
+            "comics.id",
+            ondelete="CASCADE",
+        ),
+        primary_key=True
+    ),
+    Column(
+        "genre_id", ForeignKey(
+            "genres.id",
+            ondelete="CASCADE"
+        ),
+        primary_key=True
+    )
+)
 
 
 

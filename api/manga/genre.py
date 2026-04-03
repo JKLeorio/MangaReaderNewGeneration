@@ -4,8 +4,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.database import get_async_session
-from models.genre import ComicGenre
-from schemas.genre import ComicGenreBase, ComicGenreCreate, GenreBase, GenreCreate
+from schemas.genre import GenreBase, GenreCreate
 from services.comic.genre_service import GenreService
 
 
@@ -28,7 +27,7 @@ async def get_genres(
 
 @genre_router.post(
     '/',
-    response_model=List[GenreBase],
+    response_model=GenreBase,
     status_code=status.HTTP_201_CREATED
 )
 async def create_genre(
@@ -41,6 +40,7 @@ async def create_genre(
     new_genre = await genre_service.create(
         genre_create_data
     )
+    await genre_service.commit()
     await genre_service.refresh(
         new_genre
     )
