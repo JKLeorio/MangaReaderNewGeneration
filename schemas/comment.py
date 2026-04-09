@@ -3,6 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel, ConfigDict
 
 from db.types import CommentRefers
+from schemas.pagination import Pagination
 from schemas.user import UserBase
 
 
@@ -41,3 +42,7 @@ class CommentCreate(BaseModel):
 
 class CommentPartialUpdate(BaseModel):
     content: Optional[str] = None
+
+class CommentPaginated(BaseModel):
+    items: List[CommentResponse]
+    pagination: Pagination

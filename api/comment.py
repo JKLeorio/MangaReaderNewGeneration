@@ -1,12 +1,15 @@
 from typing import List
-from fastapi import Depends, status, APIRouter
+from fastapi import Depends, Query, status, APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import noload
 
 from db.database import get_async_session
+from db.types import CommentRefers
 from models.comment import Comment
 from models.user import User
+from schemas.pagination import Pagination
 from services.comment_service import CommentService
-from schemas.comment import CommentBase, CommentCreate, CommentPartialUpdate, CommentResponse
+from schemas.comment import CommentBase, CommentCreate, CommentPaginated, CommentPartialUpdate, CommentResponse
 from api.auth.depends import current_user
 
 comment_router = APIRouter()
@@ -14,16 +17,18 @@ comment_router = APIRouter()
 
 @comment_router.get(
     "/page/{page_id}",
-    response_model=List[CommentResponse],
+    response_model=CommentPaginated,
     status_code=status.HTTP_200_OK
 )
 async def get_page_comments(
     page_id: int,
+    pagination: Pagination = Depends(Pagination.as_query),
     session: AsyncSession = Depends(get_async_session)
 ):
     comment_service = CommentService(session=session)
     comments = await comment_service.get_page_comments(
-        page_id=page_id
+        page_id=page_id,
+        pagination=pagination
     )
     return comments
 
@@ -34,26 +39,30 @@ async def get_page_comments(
 )
 async def get_person_comments(
     person_id: int,
-    session: AsyncSession = Depends(get_async_session)
+    pagination: Pagination = Depends(Pagination.as_query),
+    session: AsyncSession = Depends(get_async_session),
 ):
     comment_service = CommentService(session=session)
     comments = await comment_service.get_person_comments(
-        person_id=person_id
+        person_id=person_id,
+        pagination=pagination
     )
     return comments
 
 @comment_router.get(
     "/comic/{comic_id}",
-    response_model=List[CommentResponse],
+    response_model=CommentPaginated,
     status_code=status.HTTP_200_OK
 )
 async def get_comic_comments(
     comic_id: int,
-    session: AsyncSession = Depends(get_async_session)
+    pagination: Pagination = Depends(Pagination.as_query),
+    session: AsyncSession = Depends(get_async_session),
 ):
     comment_service = CommentService(session=session)
     comments = await comment_service.get_comic_comments(
-        comic_id=comic_id
+        comic_id=comic_id,
+        pagination=pagination
     )
     return comments
 

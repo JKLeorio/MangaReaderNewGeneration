@@ -161,7 +161,10 @@ class BaseService:
     async def get_paginated(
         self,
         *conditions: Sequence[Any],
+        total_conditions: Sequence[Any] = [],
+        total_options: Sequence[Any] = [],
         options: Sequence[Any] = [],
+        order_by: Sequence[Any] = [],
         filter: Filter = None,
         limit: int = 20,
         page: int = 1
@@ -169,9 +172,19 @@ class BaseService:
         stmt = self._generate_statement(
             *conditions,
             options=options,
-            filter=filter
+            filter=filter,
+            order_by=order_by
         )
         total_stmt = select(func.count()).select_from(stmt)
+        if total_conditions:
+            total_stmt = select(
+                func.count()
+            ).select_from(
+                self._generate_statement(
+                    *conditions,
+                    options=options
+                )
+            )
         total_result = (await self._session.execute(total_stmt)).scalar_one_or_none()
         stmt.limit(limit=limit)
         result = await self._session.execute(stmt)

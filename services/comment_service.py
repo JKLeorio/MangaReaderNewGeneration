@@ -1,14 +1,14 @@
 from collections import defaultdict
 from typing import Any, List
-
-from pydantic import BaseModel
+from fastapi_filter.contrib.sqlalchemy import Filter
 from sqlalchemy import Sequence
 from sqlalchemy.orm import joinedload, noload
 
 from models.comic import Comic, Page
 from models.person import Person
 from models.user import User
-from schemas.comment import CommentCreate, CommentResponse
+from schemas.comment import CommentCreate, CommentPaginated, CommentResponse
+from schemas.pagination import Pagination
 from .base_service import BaseService
 from db.types import CommentRefers
 from models.comment import Comment
@@ -63,37 +63,43 @@ class CommentService(BaseService):
 
     async def get_page_comments(
         self,
-        page_id: int
+        page_id: int,
+        pagination: Pagination
     ) -> Sequence[Comment]:
         page_comments = await self.get_structed_comments(
             comment_type=CommentRefers.PAGE,
-            record_id=page_id
+            record_id=page_id,
+            pagination=pagination
         )
         return page_comments
 
     async def get_person_comments(
         self,
-        person_id: int
+        person_id: int,
+        pagination: Pagination
     ) -> Sequence[Comment]:
         person_comments = await self.get_structed_comments(
             comment_type=CommentRefers.PERSON,
-            record_id=person_id
+            record_id=person_id,
+            pagination=pagination
         )
         return person_comments
 
     async def get_comic_comments(
         self,
-        comic_id: int
+        comic_id: int,
+        pagination: Pagination
     ) -> Sequence[Comment]:
         comic_comments = await self.get_structed_comments(
             comment_type=CommentRefers.COMIC,
-            record_id=comic_id
+            record_id=comic_id,
+            pagination=pagination
         )
         return comic_comments
     
     def link_comments_by_id(
         self,
-        comments: Sequence[Any]|List
+        comments: Sequence[Any]|List,
     ) -> List[CommentResponse]:
         comments_by_depth = defaultdict(dict)
         while comments:
@@ -112,21 +118,54 @@ class CommentService(BaseService):
     async def get_structed_comments(
         self,
         comment_type: CommentRefers,
-        record_id: int
-    ) -> List[CommentResponse]:
-        comments = await self.get_all(
-            Comment.refers_to == comment_type,
-            Comment.record_id == record_id,
+        record_id: int,
+        pagination: Pagination
+    ) -> CommentPaginated:
+        paginated_comments = await self.get_paginated_comments(
+            refers_to=comment_type,
+            record_id=record_id,
             options=[
                 noload(Comment.childrens),
                 joinedload(Comment.owner)
             ],
             order_by=[
                 Comment.depth.asc()
-            ]
+            ],
+            pagination=pagination
         )
-        comments_response = self.link_comments_by_id(
-            comments
+        comments_linked = self.link_comments_by_id(
+            paginated_comments.items
+        )
+        comments_response = CommentPaginated(
+            items=comments_linked,
+            pagination=paginated_comments.pagination
         )
         return comments_response
-        
+    
+    async def get_paginated_comments(
+        self,
+        record_id: int,
+        refers_to: CommentRefers,
+        pagination: Pagination,
+        filter: Filter = None,
+        options: list[Any] = [],
+        order_by: Sequence[Any] = [],
+    )-> CommentPaginated:
+        comments_paginated = await self.get_paginated(
+            Comment.record_id == record_id,
+            Comment.refers_to == refers_to,
+            total_conditions=[
+                Comment.record_id == record_id,
+                Comment.refers_to == refers_to,
+            ],
+            options=options,
+            filter=filter,
+            order_by=order_by,
+            limit=pagination.size,
+            page=pagination.page
+        )
+        comments_response = CommentPaginated(
+            items=comments_paginated['items'],
+            pagination=comments_paginated['pagination']
+        )
+        return comments_response
