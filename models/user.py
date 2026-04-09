@@ -1,4 +1,4 @@
-import typing
+from typing import List
 from sqlalchemy import (
     Boolean,
     Date,
@@ -15,6 +15,7 @@ from datetime import (
     )
 
 from db.types import Role
+from models.association import UserLibraryItem
 from .base import Base, FileMixin
 
 # if typing.TYPE_CHECKING:
@@ -54,3 +55,5 @@ class User(FileMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_super_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    user_library_items: Mapped[List["UserLibraryItem"]] = relationship()

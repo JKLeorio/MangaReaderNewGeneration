@@ -3,6 +3,7 @@ import typing
 from sqlalchemy import Column, ForeignKey, Enum, Integer, Table
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
+
 from .base import Base
 from db.types import UserLIbraryItemStatus
 
@@ -25,19 +26,10 @@ class UserLibraryItem(Base):
     comic_id: Mapped[int] = mapped_column(
         ForeignKey("comics.id", ondelete="CASCADE")
         )
-    comic: Mapped["Comic"] = relationship(
-        "Comic",
-        foreign_keys=[comic_id],
-        passive_deletes=True
-    )
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE")
         )
-    user: Mapped["User"] = relationship(
-        "User",
-        foreign_keys=[user_id],
-        passive_deletes=True
-    )
+    comic: Mapped["Comic"] = relationship()
 
 
 comic_genre_association_table= Table(
