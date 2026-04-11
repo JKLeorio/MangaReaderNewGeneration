@@ -19,6 +19,7 @@ from models.association import UserLibraryItem
 from models.person import Person
 from models.comment import Comment
 from models.image import Image
+from models.genre import Genre, comic_genre_association_table
 
 from settings import DATABASE_URL
 
