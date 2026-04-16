@@ -27,8 +27,8 @@ class BaseService:
     _session: AsyncSession = None
     _in_load_attributes: Sequence[str] = None
     model: T
-    fk_fields_on_create: Dict[T, List[str]] = []
-    fk_fields_on_update: Dict[T, List[str]] = []
+    fk_fields_on_create: Dict[T, List[str]] = {}
+    fk_fields_on_update: Dict[T, List[str]] = {}
 
     def __init__(
         self,
