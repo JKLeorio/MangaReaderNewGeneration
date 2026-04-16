@@ -15,19 +15,21 @@ if typing.TYPE_CHECKING:
 class UserLibraryItem(Base):
     __tablename__ = "user_library_items"
 
-    id: Mapped[int] = mapped_column(
-        Integer, 
-        primary_key=True, 
-        autoincrement=True
-        )
+    # id: Mapped[int] = mapped_column(
+    #     Integer, 
+    #     primary_key=True, 
+    #     autoincrement=True
+    #     )
     type: Mapped[UserLIbraryItemStatus] = mapped_column(
         Enum(UserLIbraryItemStatus), default=UserLIbraryItemStatus.READING
     )
     comic_id: Mapped[int] = mapped_column(
-        ForeignKey("comics.id", ondelete="CASCADE")
+        ForeignKey("comics.id", ondelete="CASCADE"),
+        primary_key=True
         )
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE")
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True
         )
     comic: Mapped["Comic"] = relationship()
 
