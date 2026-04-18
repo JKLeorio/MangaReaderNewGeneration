@@ -4,13 +4,15 @@ from sqlalchemy import select, func, case
 from models.association import UserLibraryItem
 from models.comic import Comic
 from models.user import User
-from schemas.user_library_item import UserLibraryItemCreate
+from schemas.user_library_item import UserLibraryItemCreate, UserLibraryItemPartialUpdate
 from services.base_service import BaseService
 
 class UserLibraryService(BaseService):
     fk_fields_on_create = {
         Comic : ["comic_id"]
     }
+
+    model = UserLibraryItem
 
     async def create(
         self,
@@ -61,3 +63,43 @@ class UserLibraryService(BaseService):
         self._session.add(new_user_library_item)
         await self._session.flush()
         return new_user_library_item
+    
+    async def delete_by_comic_id(
+        self,
+        comic_id: int,
+        user_id: int
+    ):
+        user_library_item = await self.get(
+            UserLibraryItem.comic_id == comic_id,
+            UserLibraryItem.user_id == user_id,
+            throw_exception=True
+        )
+        await self.delete(
+            user_library_item
+        )
+        return
+    
+    async def update_by_comic_id(
+        self,
+        comic_id: int,
+        user_id: int,
+        update_data: UserLibraryItemPartialUpdate
+    ):
+        user_library_item = await self.get(
+            UserLibraryItem.comic_id == comic_id,
+            UserLibraryItem.user_id == user_id
+        )
+        await self.update(
+            scalar=user_library_item,
+            update_data=update_data
+        )
+        return user_library_item
+    
+    async def get_user_library(
+        self,
+        user_id:int
+    ):
+        user_library = await self.get_all(
+            UserLibraryItem.user_id == user_id
+        )
+        return user_library

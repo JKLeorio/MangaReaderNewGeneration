@@ -37,6 +37,13 @@ class BaseService:
     ):
         self._session = session
         self._in_load_attributes = in_load_attributes
+        if not hasattr(
+            self,
+            "model"
+        ):
+            raise Exception(
+                "you need to set model propery for your service"
+            )
     
     async def finish(self):
         if self._session is not None:
